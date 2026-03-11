@@ -208,7 +208,7 @@ const ProductDetail = () => {
                             <textarea className="input" placeholder="Share your thoughts about this poster..." rows={3} value={review.comment} onChange={e => setReview({ ...review, comment: e.target.value })} style={{ marginBottom: '1rem', resize: 'vertical' }} />
                             <button onClick={async () => {
                                 try {
-                                    await axios.post(`/api/products/${id}/reviews`, review, { headers: { Authorization: `Bearer ${user?._id}` } });
+                                    await axios.post(`/api/products/${id}/reviews`, review);
                                     alert('Review submitted!');
                                     setReview({ rating: 5, comment: '' });
                                     // reload

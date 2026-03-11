@@ -30,7 +30,7 @@ const UserProfile = () => {
     const handleProfileUpdate = async (e: React.FormEvent) => {
         e.preventDefault(); setSaving(true); setError(''); setSuccess('');
         try {
-            const { data } = await axios.put('/api/users/profile', { name, email, phone, ...(password ? { password } : {}) }, { headers: { Authorization: `Bearer ${user._id}` } });
+            const { data } = await axios.put('/api/users/profile', { name, email, phone, ...(password ? { password } : {}) });
             updateUser(data);
             setSuccess('Profile updated!');
             setPassword('');
@@ -40,9 +40,9 @@ const UserProfile = () => {
 
     const handleAddAddress = async (e: React.FormEvent) => {
         e.preventDefault(); setSaving(true);
-        const updated = [...addresses, { ...newAddr, _id: Date.now().toString() }];
+        const updated = [...addresses, newAddr];
         try {
-            const { data } = await axios.put('/api/users/profile', { addresses: updated }, { headers: { Authorization: `Bearer ${user._id}` } });
+            const { data } = await axios.put('/api/users/profile', { addresses: updated });
             updateUser(data);
             setAddresses(data.addresses);
             setNewAddr({ address: '', city: '', postalCode: '', country: 'Srilanka' });
@@ -54,7 +54,7 @@ const UserProfile = () => {
     const deleteAddress = async (id: string) => {
         const updated = addresses.filter((a: any) => a._id !== id);
         try {
-            const { data } = await axios.put('/api/users/profile', { addresses: updated }, { headers: { Authorization: `Bearer ${user._id}` } });
+            const { data } = await axios.put('/api/users/profile', { addresses: updated });
             updateUser(data);
             setAddresses(data.addresses);
             setSuccess('Address removed!');

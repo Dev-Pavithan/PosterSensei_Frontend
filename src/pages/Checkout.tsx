@@ -68,15 +68,15 @@ const Checkout = () => {
                 ))}
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '1.5rem', alignItems: 'start' }}>
-                <div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(clamp(320px, 100%, 1fr), 1fr))', gap: '1.5rem', alignItems: 'start' }}>
+                <div style={{ order: 1 }}>
                     {/* Step 0: Address */}
                     {step === 0 && (
-                        <div className="card" style={{ padding: '1.5rem' }}>
+                        <div className="card" style={{ padding: 'clamp(1rem, 4vw, 1.5rem)' }}>
                             <h3 style={{ fontWeight: 700, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                 <MapPin size={18} color="var(--primary)" /> Delivery Address
                             </h3>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
                                 <div className="input-group" style={{ gridColumn: '1/-1' }}>
                                     <label className="input-label">Street Address</label>
                                     <input className="input" placeholder="Door No., Street, Area" value={address.address} onChange={e => setAddress({ ...address, address: e.target.value })} />
@@ -94,7 +94,7 @@ const Checkout = () => {
                                     <input className="input" value={address.country} onChange={e => setAddress({ ...address, country: e.target.value })} />
                                 </div>
                             </div>
-                            <button onClick={() => setStep(1)} disabled={!address.address || !address.city || !address.postalCode} className="btn btn-primary btn-lg" style={{ marginTop: '1.5rem' }}>
+                            <button onClick={() => setStep(1)} disabled={!address.address || !address.city || !address.postalCode} className="btn btn-primary btn-lg btn-full" style={{ marginTop: '1.5rem' }}>
                                 Continue to Delivery <ChevronRight size={16} />
                             </button>
                         </div>
@@ -102,7 +102,7 @@ const Checkout = () => {
 
                     {/* Step 1: Delivery Method */}
                     {step === 1 && (
-                        <div className="card" style={{ padding: '1.5rem' }}>
+                        <div className="card" style={{ padding: 'clamp(1rem, 4vw, 1.5rem)' }}>
                             <h3 style={{ fontWeight: 700, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                 <Truck size={18} color="var(--primary)" /> Choose Delivery Method
                             </h3>
@@ -126,16 +126,16 @@ const Checkout = () => {
                                     </div>
                                 ))}
                             </div>
-                            <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
-                                <button onClick={() => setStep(0)} className="btn btn-ghost" style={{ border: '1px solid var(--border)' }}>Back</button>
-                                <button onClick={() => setStep(2)} className="btn btn-primary btn-lg" style={{ flex: 1 }}>Review Order <ChevronRight size={16} /></button>
+                            <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
+                                <button onClick={() => setStep(0)} className="btn btn-ghost" style={{ border: '1px solid var(--border)', flex: 1 }}>Back</button>
+                                <button onClick={() => setStep(2)} className="btn btn-primary btn-lg" style={{ flex: 2 }}>Review Order <ChevronRight size={16} /></button>
                             </div>
                         </div>
                     )}
 
                     {/* Step 2: Review */}
                     {step === 2 && (
-                        <div className="card" style={{ padding: '1.5rem' }}>
+                        <div className="card" style={{ padding: 'clamp(1rem, 4vw, 1.5rem)' }}>
                             <h3 style={{ fontWeight: 700, marginBottom: '1.25rem' }}>Review Your Order</h3>
                             {items.map(item => (
                                 <div key={`${item._id}-${item.size}`} style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.75rem', padding: '0.75rem', background: 'var(--surface-2)', borderRadius: 'var(--radius-sm)' }}>
@@ -152,9 +152,9 @@ const Checkout = () => {
                                 <div style={{ marginTop: '0.3rem' }}>🚚 {deliveryMethod === 'post' ? 'Standard Post' : 'Room Makeover Service'} · 💳 {paymentMethod}</div>
                             </div>
                             {error && <div className="alert alert-error" style={{ marginTop: '1rem' }}>{error}</div>}
-                            <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
-                                <button onClick={() => setStep(1)} className="btn btn-ghost" style={{ border: '1px solid var(--border)' }}>Back</button>
-                                <button onClick={handlePlaceOrder} disabled={loading} className="btn btn-primary btn-lg" style={{ flex: 1, background: 'linear-gradient(90deg, var(--primary), var(--secondary))' }}>
+                            <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
+                                <button onClick={() => setStep(1)} className="btn btn-ghost" style={{ border: '1px solid var(--border)', flex: 1 }}>Back</button>
+                                <button onClick={handlePlaceOrder} disabled={loading} className="btn btn-primary btn-lg" style={{ flex: 2, background: 'linear-gradient(90deg, var(--primary), var(--secondary))' }}>
                                     {loading ? 'Placing Order...' : `Place Order · LKR ${total.toFixed(0)}`}
                                 </button>
                             </div>
@@ -163,15 +163,16 @@ const Checkout = () => {
                 </div>
 
                 {/* Summary sidebar */}
-                <div className="card" style={{ padding: '1.25rem', position: 'sticky', top: '130px' }}>
+                <div className="card" style={{ padding: '1.25rem', position: 'sticky', top: '130px', order: window.innerWidth < 768 ? 0 : 2 }}>
                     <div style={{ fontWeight: 700, marginBottom: '0.75rem' }}>Order Summary</div>
-                    {items.slice(0, 2).map(item => (
-                        <div key={item._id} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                    <div style={{ maxHeight: '150px', overflowY: 'auto', marginBottom: '0.5rem' }}>
+                    {items.map(item => (
+                        <div key={`${item._id}-${item.size}`} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
                             <img src={item.imageUrl} alt="" style={{ width: '44px', height: '48px', objectFit: 'cover', borderRadius: '6px' }} />
-                            <div style={{ fontSize: '0.78rem', lineHeight: 1.4 }}>{item.title}<br /><span style={{ color: 'var(--text-muted)' }}>x{item.qty}</span></div>
+                            <div style={{ flex: 1, fontSize: '0.78rem', lineHeight: 1.4 }}>{item.title}<br /><span style={{ color: 'var(--text-muted)' }}>{item.qty} x LKR {item.price}</span></div>
                         </div>
                     ))}
-                    {items.length > 2 && <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>+{items.length - 2} more items</div>}
+                    </div>
                     <hr className="divider" />
                     {[
                         { label: 'Subtotal', val: `LKR ${subtotal.toFixed(0)}` },
