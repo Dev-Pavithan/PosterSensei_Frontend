@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Pencil, Trash2, X, Save, Image, MoreHorizontal, Star } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Save, Image, MoreHorizontal, Star, Eye } from 'lucide-react';
 import axios from 'axios';
 
 const emptyForm = { title: '', anime: '', category: 'Posters', price: '', originalPrice: '', discount: '', imageUrl: '', stock: '', description: '', sizes: 'A4,A3,A2', featured: false };
@@ -13,6 +13,7 @@ const AdminProducts = () => {
     const [saving, setSaving] = useState(false);
     const [uploadingImage, setUploadingImage] = useState(false);
     const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+    const [viewProduct, setViewProduct] = useState<any>(null);
 
     const fetchProducts = () => {
         axios.get('/api/products?pageSize=50').then(r => setProducts(r.data.products || [])).catch(() => setProducts([])).finally(() => setLoading(false));
@@ -125,8 +126,11 @@ const AdminProducts = () => {
                                         </button>
 
                                         {openMenuId === p._id && (
-                                            <div onClick={e => e.stopPropagation()} style={{ position: 'absolute', right: '40px', top: '8px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-lg)', zIndex: 200, minWidth: '160px' }}>
+                                            <div onClick={e => e.stopPropagation()} style={{ position: 'absolute', right: '100%', top: '0', marginRight: '0.5rem', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-lg)', zIndex: 1000, minWidth: '160px' }}>
                                                 <div style={{ padding: '0.4rem' }}>
+                                                    <button onClick={() => setViewProduct(p)} className="btn btn-ghost btn-sm btn-full" style={{ justifyContent: 'flex-start', gap: '0.5rem' }}>
+                                                        <Eye size={14} /> View Details
+                                                    </button>
                                                     <button onClick={() => openEdit(p)} className="btn btn-ghost btn-sm btn-full" style={{ justifyContent: 'flex-start', gap: '0.5rem' }}>
                                                         <Pencil size={14} /> Edit Product
                                                     </button>
@@ -227,6 +231,68 @@ const AdminProducts = () => {
                         <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid var(--border)', display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
                             <button onClick={() => setShowModal(false)} className="btn btn-ghost" style={{ border: '1px solid var(--border)' }}>Cancel</button>
                             <button onClick={handleSave} disabled={saving || uploadingImage} className="btn btn-primary"><Save size={15} /> {saving ? 'Saving...' : 'Save Product'}</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Detail Modal */}
+            {viewProduct && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+                    <div style={{ background: 'var(--surface)', borderRadius: 'var(--radius-xl)', width: '100%', maxWidth: '700px', maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: 'var(--shadow-xl)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border)' }}>
+                            <div style={{ fontWeight: 800, fontSize: '1.2rem', color: 'var(--text-primary)' }}>Product Details</div>
+                            <button onClick={() => setViewProduct(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}><X size={20} /></button>
+                        </div>
+                        <div style={{ padding: '2rem', overflowY: 'auto', flex: 1 }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem' }}>
+                                <div style={{ textAlign: 'center' }}>
+                                    <img src={viewProduct.imageUrl} alt={viewProduct.title} style={{ width: '100%', maxHeight: '400px', objectFit: 'contain', borderRadius: 'var(--radius-lg)', background: 'var(--surface-2)', padding: '1rem' }} />
+                                </div>
+                                <div>
+                                    <div style={{ marginBottom: '1.5rem' }}>
+                                        <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--primary)', marginBottom: '0.5rem' }}>{viewProduct.anime} · {viewProduct.category}</div>
+                                        <h3 style={{ fontSize: '1.75rem', fontWeight: 800, lineHeight: 1.2, marginBottom: '0.75rem' }}>{viewProduct.title}</h3>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                                            <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--primary)' }}>LKR {viewProduct.price}</div>
+                                            {viewProduct.originalPrice > viewProduct.price && (
+                                                <div style={{ fontSize: '1.1rem', color: 'var(--text-muted)', textDecoration: 'line-through' }}>LKR {viewProduct.originalPrice}</div>
+                                            )}
+                                            {viewProduct.discount > 0 && <div className="badge badge-success">{viewProduct.discount}% OFF</div>}
+                                        </div>
+                                    </div>
+
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+                                        <div style={{ background: 'var(--surface-2)', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)' }}>
+                                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Stock</div>
+                                            <div style={{ fontWeight: 700, fontSize: '1.1rem', color: viewProduct.stock > 0 ? 'var(--success)' : 'var(--error)' }}>
+                                                {viewProduct.stock > 0 ? `${viewProduct.stock} Units` : 'Out of Stock'}
+                                            </div>
+                                        </div>
+                                        <div style={{ background: 'var(--surface-2)', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)' }}>
+                                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Featured</div>
+                                            <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>{viewProduct.featured ? 'Yes' : 'No'}</div>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ marginBottom: '1.5rem' }}>
+                                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700, marginBottom: '0.5rem', textTransform: 'uppercase' }}>Description</div>
+                                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.6 }}>{viewProduct.description || 'No description available for this product.'}</p>
+                                    </div>
+
+                                    <div>
+                                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700, marginBottom: '0.5rem', textTransform: 'uppercase' }}>Available Sizes</div>
+                                        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                            {(viewProduct.sizes || []).map((s: string) => (
+                                                <span key={s} style={{ padding: '0.3rem 0.75rem', background: 'var(--primary-light)', color: 'var(--primary)', borderRadius: 'var(--radius-full)', fontSize: '0.8rem', fontWeight: 700 }}>{s}</span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style={{ padding: '1.25rem 1.5rem', borderTop: '1px solid var(--border)', display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', background: 'var(--surface-2)' }}>
+                            <button onClick={() => setViewProduct(null)} className="btn btn-ghost" style={{ border: '1px solid var(--border)', background: 'white' }}>Close</button>
+                            <button onClick={() => openEdit(viewProduct)} className="btn btn-primary"><Pencil size={15} /> Edit Product</button>
                         </div>
                     </div>
                 </div>
