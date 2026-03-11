@@ -1,9 +1,11 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Instagram, Twitter, Youtube, Mail, Phone, MapPin, Shield, Truck, RefreshCw, Headphones } from 'lucide-react';
 import axios from 'axios';
 
 const Footer = () => {
+    const location = useLocation();
+    const isHome = location.pathname === '/';
     const [categories, setCategories] = React.useState<string[]>(['Naruto', 'One Piece', 'Attack on Titan']);
 
     React.useEffect(() => {
@@ -22,7 +24,8 @@ const Footer = () => {
     return (
         <footer style={{ background: '#111827', color: 'white', marginTop: '3rem' }}>
             {/* Trust badges */}
-            <div style={{ background: '#f9fafb', borderTop: '1px solid var(--border)', padding: '1.5rem 0' }}>
+            {isHome && (
+                <div style={{ background: '#f9fafb', borderTop: '1px solid var(--border)', padding: '1.5rem 0' }}>
                 <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
                     {trust.map(({ icon, title, desc }) => (
                         <div key={title} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
@@ -37,6 +40,7 @@ const Footer = () => {
                     ))}
                 </div>
             </div>
+            )}
 
             {/* Main footer */}
             <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2rem', padding: '3rem 1.5rem' }}>
