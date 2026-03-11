@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://i.ibb.co/6P3D8Kj/logo.png" alt="PosterSensei Logo" height="100"/>
+  <img src="https://poster-sensei-frontend.vercel.app/assets/logo-CrwZsG8L.png" alt="PosterSensei Logo" height="100"/>
   <h1>⛩️ PosterSensei - Frontend</h1>
   <p><strong>Turn Your Walls into Anime Worlds.</strong></p>
   
