@@ -109,7 +109,7 @@ const AdminProducts = () => {
                                     </td>
                                     <td style={{ padding: '0.75rem 1rem', color: 'var(--text-secondary)' }}>{p.anime}</td>
                                     <td style={{ padding: '0.75rem 1rem' }}><span className="badge badge-secondary">{p.category}</span></td>
-                                    <td style={{ padding: '0.75rem 1rem', fontWeight: 600 }}>₹{p.price}</td>
+                                    <td style={{ padding: '0.75rem 1rem', fontWeight: 600 }}>LKR {p.price}</td>
                                     <td style={{ padding: '0.75rem 1rem' }}>
                                         <span className={`badge ${p.stock > 0 ? 'badge-success' : 'badge-error'}`}>{p.stock > 0 ? p.stock : 'Out'}</span>
                                     </td>
@@ -165,8 +165,8 @@ const AdminProducts = () => {
                                     { label: 'Title', field: 'title', placeholder: 'e.g. Naruto - Team 7', col: '1/-1' },
                                     { label: 'Anime', field: 'anime', placeholder: 'e.g. Naruto' },
                                     { label: 'Category', field: 'category', placeholder: 'Posters' },
-                                    { label: 'Price (₹)', field: 'price', placeholder: '449', type: 'number' },
-                                    { label: 'Original Price (₹)', field: 'originalPrice', placeholder: '599', type: 'number' },
+                                    { label: 'Price (LKR)', field: 'price', placeholder: '449', type: 'number' },
+                                    { label: 'Original Price (LKR)', field: 'originalPrice', placeholder: '599', type: 'number' },
                                     { label: 'Discount (%)', field: 'discount', placeholder: '25', type: 'number' },
                                     { label: 'Stock', field: 'stock', placeholder: '10', type: 'number' },
                                     { label: 'Sizes (comma separated)', field: 'sizes', placeholder: 'A4,A3,A2' },

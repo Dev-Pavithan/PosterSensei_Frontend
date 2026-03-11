@@ -54,7 +54,7 @@ const Header = () => {
         <header style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 1000, boxShadow: 'var(--shadow-sm)', transition: 'all var(--transition)' }}>
             {/* Top promo strip */}
             <div style={{ background: 'linear-gradient(90deg, var(--primary), var(--secondary))', color: 'white', textAlign: 'center', padding: '0.4rem', fontSize: '0.8rem', fontWeight: 700 }}>
-                🎌 Free Shipping on orders above ₹999 · 🖨️ Premium quality printing guaranteed
+                🎌 Free Shipping on orders above LKR 999 · 🖨️ Premium quality printing guaranteed
             </div>
 
             {/* Main header */}

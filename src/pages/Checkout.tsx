@@ -108,8 +108,8 @@ const Checkout = () => {
                             </h3>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                 {[
-                                    { val: 'post', icon: <Truck size={28} />, title: 'Standard Post', desc: 'We print and ship it to your address. Arrives in 5-7 business days.', price: shipping === 0 ? 'FREE' : `₹${shipping}` },
-                                    { val: 'local_setup', icon: <Home size={28} />, title: 'Room Makeover Service', desc: 'Our team visits your home, brings the posters, and installs everything professionally on your wall.', price: 'From ₹299', badge: '✨ Premium' },
+                                    { val: 'post', icon: <Truck size={28} />, title: 'Standard Post', desc: 'We print and ship it to your address. Arrives in 5-7 business days.', price: shipping === 0 ? 'FREE' : `LKR ${shipping}` },
+                                    { val: 'local_setup', icon: <Home size={28} />, title: 'Room Makeover Service', desc: 'Our team visits your home, brings the posters, and installs everything professionally on your wall.', price: 'From LKR 299', badge: '✨ Premium' },
                                 ].map(({ val, icon, title, desc, price, badge }) => (
                                     <div key={val} onClick={() => setDeliveryMethod(val as any)} style={{ padding: '1.25rem', borderRadius: 'var(--radius-md)', border: `2px solid ${deliveryMethod === val ? 'var(--primary)' : 'var(--border)'}`, background: deliveryMethod === val ? 'var(--primary-light)' : 'white', cursor: 'pointer', transition: 'all 0.2s' }}>
                                         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
@@ -144,7 +144,7 @@ const Checkout = () => {
                                         <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{item.title}</div>
                                         <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Qty: {item.qty} {item.size && `· Size: ${item.size}`}</div>
                                     </div>
-                                    <div style={{ fontWeight: 700 }}>₹{(item.price * item.qty).toFixed(0)}</div>
+                                    <div style={{ fontWeight: 700 }}>LKR {(item.price * item.qty).toFixed(0)}</div>
                                 </div>
                             ))}
                             <div style={{ background: 'var(--surface-2)', padding: '1rem', borderRadius: 'var(--radius-sm)', marginTop: '0.75rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
@@ -155,7 +155,7 @@ const Checkout = () => {
                             <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
                                 <button onClick={() => setStep(1)} className="btn btn-ghost" style={{ border: '1px solid var(--border)' }}>Back</button>
                                 <button onClick={handlePlaceOrder} disabled={loading} className="btn btn-primary btn-lg" style={{ flex: 1, background: 'linear-gradient(90deg, var(--primary), var(--secondary))' }}>
-                                    {loading ? 'Placing Order...' : `Place Order · ₹${total.toFixed(0)}`}
+                                    {loading ? 'Placing Order...' : `Place Order · LKR ${total.toFixed(0)}`}
                                 </button>
                             </div>
                         </div>
@@ -174,9 +174,9 @@ const Checkout = () => {
                     {items.length > 2 && <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>+{items.length - 2} more items</div>}
                     <hr className="divider" />
                     {[
-                        { label: 'Subtotal', val: `₹${subtotal.toFixed(0)}` },
-                        ...(discount > 0 ? [{ label: 'Discount', val: `-₹${discount.toFixed(0)}`, color: 'var(--success)' }] : []),
-                        { label: 'Shipping', val: shipping === 0 ? 'FREE' : `₹${shipping}` }
+                        { label: 'Subtotal', val: `LKR ${subtotal.toFixed(0)}` },
+                        ...(discount > 0 ? [{ label: 'Discount', val: `-LKR ${discount.toFixed(0)}`, color: 'var(--success)' }] : []),
+                        { label: 'Shipping', val: shipping === 0 ? 'FREE' : `LKR ${shipping}` }
                     ].map(({ label, val, color }) => (
                         <div key={label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', marginBottom: '0.4rem', color: color || 'var(--text-primary)' }}>
                             <span style={{ color: 'var(--text-secondary)' }}>{label}</span><span>{val}</span>
@@ -184,7 +184,7 @@ const Checkout = () => {
                     ))}
                     <hr className="divider" />
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800, color: 'var(--primary)' }}>
-                        <span>Total</span><span>₹{total.toFixed(0)}</span>
+                        <span>Total</span><span>LKR {total.toFixed(0)}</span>
                     </div>
                 </div>
             </div>

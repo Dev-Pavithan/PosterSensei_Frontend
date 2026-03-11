@@ -110,13 +110,13 @@ const ProductDetail = () => {
 
                     <div style={{ padding: '1.5rem', background: 'var(--surface-2)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)' }}>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '1rem', marginBottom: '0.5rem' }}>
-                            <span style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--primary)', letterSpacing: '-1px' }}>₹{product.price}</span>
+                            <span style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--primary)', letterSpacing: '-1px' }}>LKR {product.price}</span>
                             {product.originalPrice > 0 && (
-                                <span style={{ fontSize: '1.25rem', color: 'var(--text-muted)', textDecoration: 'line-through', fontWeight: 600 }}>₹{product.originalPrice}</span>
+                                <span style={{ fontSize: '1.25rem', color: 'var(--text-muted)', textDecoration: 'line-through', fontWeight: 600 }}>LKR {product.originalPrice}</span>
                             )}
                         </div>
                         {product.discount > 0 && (
-                            <div className="badge badge-success" style={{ fontWeight: 800 }}>Save ₹{product.originalPrice - product.price} ({product.discount}% OFF)</div>
+                            <div className="badge badge-success" style={{ fontWeight: 800 }}>Save LKR {product.originalPrice - product.price} ({product.discount}% OFF)</div>
                         )}
                     </div>
 
@@ -161,7 +161,7 @@ const ProductDetail = () => {
                     {/* Trust badges */}
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
                         {[
-                            { icon: <Truck size={20} />, label: 'Free Delivery', sub: 'Orders over ₹999' },
+                            { icon: <Truck size={20} />, label: 'Free Delivery', sub: 'Orders over LKR 999' },
                             { icon: <Shield size={20} />, label: 'Secure Payment', sub: 'Encrypted & Safe' },
                             { icon: <Package size={20} />, label: 'Quality Check', sub: 'Verified Premium' }
                         ].map(({ icon, label, sub }) => (

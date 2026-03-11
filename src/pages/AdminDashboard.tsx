@@ -22,7 +22,7 @@ const AdminDashboard = () => {
 
     const KPI_CARDS = [
         { icon: <Package size={24} />, label: 'Total Orders', value: stats.totalOrders, color: '#3b82f6', bg: '#dbeafe' },
-        { icon: <TrendingUp size={24} />, label: 'Total Revenue', value: `₹${stats.totalRevenue.toLocaleString()}`, color: '#10b981', bg: '#d1fae5' },
+        { icon: <TrendingUp size={24} />, label: 'Total Revenue', value: `LKR ${stats.totalRevenue.toLocaleString()}`, color: '#10b981', bg: '#d1fae5' },
         { icon: <Clock size={24} />, label: 'Pending Orders', value: stats.pendingOrders, color: '#f59e0b', bg: '#fef3c7' },
         { icon: <ShoppingBag size={24} />, label: 'Delivered', value: stats.deliveredOrders, color: '#8b5cf6', bg: '#ede9fe' },
     ];
@@ -76,7 +76,7 @@ const AdminDashboard = () => {
                             <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{o.user?.name}</div>
                             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>#{o._id?.slice(-6).toUpperCase()}</div>
                         </div>
-                        <div style={{ fontWeight: 600 }}>₹{o.totalPrice}</div>
+                        <div style={{ fontWeight: 600 }}>LKR {o.totalPrice}</div>
                         <span className={`badge status-${o.status}`} style={{ textTransform: 'capitalize' }}>{o.status}</span>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{new Date(o.createdAt).toLocaleDateString()}</div>
                     </div>

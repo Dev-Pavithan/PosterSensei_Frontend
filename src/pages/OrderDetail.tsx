@@ -133,12 +133,12 @@ const OrderDetail = () => {
                             <div style={{ fontWeight: 600 }}>{item.title}</div>
                             <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '0.3rem' }}>Qty: {item.qty} {item.size && `· Size: ${item.size}`}</div>
                         </div>
-                        <div style={{ fontWeight: 700 }}>₹{(item.price * item.qty).toFixed(0)}</div>
+                        <div style={{ fontWeight: 700 }}>LKR {(item.price * item.qty).toFixed(0)}</div>
                     </div>
                 ))}
                 <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '0.75rem', gap: '2rem' }}>
                     <span style={{ color: 'var(--text-muted)' }}>Total:</span>
-                    <span style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--primary)' }}>₹{order.totalPrice}</span>
+                    <span style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--primary)' }}>LKR {order.totalPrice}</span>
                 </div>
             </div>
             {/* Admin Controls */}

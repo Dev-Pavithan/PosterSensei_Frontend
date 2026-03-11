@@ -55,8 +55,8 @@ const ProductCard = ({ product }: { product: any }) => {
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>({product.numReviews || 0})</span>
                 </div>
                 <div className="product-price-row">
-                    <span className="product-price">₹{product.price}</span>
-                    {product.originalPrice > 0 && <span className="product-original-price">₹{product.originalPrice}</span>}
+                    <span className="product-price">LKR {product.price}</span>
+                    {product.originalPrice > 0 && <span className="product-original-price">LKR {product.originalPrice}</span>}
                 </div>
             </div>
             <style dangerouslySetInnerHTML={{ __html: `.product-card:hover .product-card-overlay { opacity: 1 !important; transform: translateY(-5px); }` }} />

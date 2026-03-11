@@ -75,8 +75,8 @@ const Cart = () => {
                                         <button className="qty-btn" onClick={() => updateQty(item._id, item.qty + 1, item.size)} style={{ width: '36px' }}><Plus size={14} /></button>
                                     </div>
                                     <div style={{ textAlign: 'right' }}>
-                                        <div style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--primary)' }}>₹{(item.price * item.qty).toFixed(0)}</div>
-                                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>₹{item.price} / unit</div>
+                                        <div style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--primary)' }}>LKR {(item.price * item.qty).toFixed(0)}</div>
+                                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>LKR {item.price} / unit</div>
                                     </div>
                                 </div>
                             </div>
@@ -109,21 +109,21 @@ const Cart = () => {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
                                 <span>Subtotal</span>
-                                <span>₹{subtotal.toFixed(0)}</span>
+                                <span>LKR {subtotal.toFixed(0)}</span>
                             </div>
                             {discount > 0 && (
                                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem', color: 'var(--success)', fontWeight: 700 }}>
                                     <span>Discount</span>
-                                    <span>-₹{discount.toFixed(0)}</span>
+                                    <span>-LKR {discount.toFixed(0)}</span>
                                 </div>
                             )}
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
                                 <span>Shipping</span>
-                                <span style={{ color: shipping === 0 ? 'var(--success)' : 'inherit' }}>{shipping === 0 ? 'FREE' : `₹${shipping}`}</span>
+                                <span style={{ color: shipping === 0 ? 'var(--success)' : 'inherit' }}>{shipping === 0 ? 'FREE' : `LKR ${shipping}`}</span>
                             </div>
                             {shipping > 0 && (
                                 <div style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 700, background: 'var(--primary-light)', padding: '0.5rem', borderRadius: 'var(--radius-sm)', textAlign: 'center' }}>
-                                    Add ₹{(999 - (subtotal - discount)).toFixed(0)} more for FREE Shipping!
+                                    Add LKR {(999 - (subtotal - discount)).toFixed(0)} more for FREE Shipping!
                                 </div>
                             )}
                         </div>
@@ -132,7 +132,7 @@ const Cart = () => {
                         
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 900, fontSize: '1.5rem', marginBottom: '2rem', color: 'var(--text-primary)' }}>
                             <span>Total</span>
-                            <span>₹{total.toFixed(0)}</span>
+                            <span>LKR {total.toFixed(0)}</span>
                         </div>
 
                         <button onClick={() => navigate('/checkout')} className="btn btn-primary btn-full btn-lg" style={{ height: '60px', fontSize: '1.1rem', fontWeight: 900 }}>

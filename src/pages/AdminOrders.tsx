@@ -134,7 +134,7 @@ const AdminOrders = () => {
                                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{o.user?.email}</div>
                                     </td>
                                     <td style={{ padding: '0.75rem 1rem', color: 'var(--text-secondary)' }}>{new Date(o.createdAt).toLocaleDateString()}</td>
-                                    <td style={{ padding: '0.75rem 1rem', fontWeight: 700 }}>₹{o.totalPrice}</td>
+                                    <td style={{ padding: '0.75rem 1rem', fontWeight: 700 }}>LKR {o.totalPrice}</td>
                                     <td style={{ padding: '0.75rem 1rem' }}>
                                         <div style={{ fontSize: '0.78rem' }}>{o.paymentMethod}</div>
                                         <div style={{ fontSize: '0.68rem', color: o.isPaid ? 'var(--success)' : 'var(--error)', fontWeight: 700 }}>{o.isPaid ? 'PAID' : 'PENDING'}</div>

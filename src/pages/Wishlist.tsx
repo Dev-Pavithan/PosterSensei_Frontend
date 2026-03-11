@@ -43,7 +43,7 @@ const Wishlist = () => {
                                     <div className="product-anime">{p.anime}</div>
                                 </Link>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', paddingTop: '1rem' }}>
-                                    <span className="product-price">₹{p.price}</span>
+                                    <span className="product-price">LKR {p.price}</span>
                                     <button onClick={() => addItem(p)} className="btn btn-primary btn-sm" style={{ padding: '0.4rem 0.8rem' }}>
                                         <ShoppingCart size={14} /> Add
                                     </button>

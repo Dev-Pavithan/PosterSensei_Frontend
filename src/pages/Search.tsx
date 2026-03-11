@@ -72,8 +72,8 @@ const Search = () => {
                                     <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>({p.numReviews || 0})</span>
                                 </div>
                                 <div className="product-price-row">
-                                    <span className="product-price">₹{p.price}</span>
-                                    {p.originalPrice > 0 && <span className="product-original-price">₹{p.originalPrice}</span>}
+                                    <span className="product-price">LKR {p.price}</span>
+                                    {p.originalPrice > 0 && <span className="product-original-price">LKR {p.originalPrice}</span>}
                                 </div>
                             </div>
                         </Link>

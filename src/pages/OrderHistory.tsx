@@ -50,7 +50,7 @@ const OrderHistory = () => {
                             <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
                         </div>
                         <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                            <div style={{ fontWeight: 700, marginBottom: '0.4rem' }}>₹{order.totalPrice}</div>
+                            <div style={{ fontWeight: 700, marginBottom: '0.4rem' }}>LKR {order.totalPrice}</div>
                             <span className={`badge ${statusClass(order.status)}`} style={{ textTransform: 'capitalize' }}>{order.status}</span>
                         </div>
                         <ChevronRight size={18} color="var(--text-muted)" />
