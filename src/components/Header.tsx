@@ -6,7 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { useTheme } from '../contexts/ThemeContext';
-import logo from '../images/non_background_logo.png';
+import logo from '../images/logo.png';
 
 const Header = () => {
     const { user, logout } = useAuth();
