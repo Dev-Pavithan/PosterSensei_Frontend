@@ -23,7 +23,7 @@ import './index.css';
 import axios from 'axios';
 
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL = 'https://poster-sensei-backend.vercel.app';
+// axios.defaults.baseURL = 'https://poster-sensei-backend.vercel.app';
 
 import { ThemeProvider } from './contexts/ThemeContext';
 
