@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { useTheme } from '../contexts/ThemeContext';
+import logo from '../images/non_background_logo.png';
 
 const Header = () => {
     const { user, logout } = useAuth();
@@ -61,8 +62,8 @@ const Header = () => {
                 {/* Logo & Mobile Menu Toggle */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                     <Link to="/" style={{ flexShrink: 0 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <div style={{ width: 36, height: 36, borderRadius: '10px', background: 'linear-gradient(135deg, var(--primary), var(--secondary))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: '1rem' }}>P</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                            <img src={logo} alt="PosterSensei Logo" style={{ width: 42, height: 42, objectFit: 'contain' }} />
                             <span style={{ fontWeight: 900, fontSize: '1.25rem', color: 'var(--text-primary)', display: 'clamp(0px, 15vw, auto)' }}>Poster<span style={{ color: 'var(--primary)' }}>Sensei</span></span>
                         </div>
                     </Link>
