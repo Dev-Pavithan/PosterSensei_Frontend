@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { ShoppingCart, Search, User, Heart, LogOut, Package, Settings, ChevronDown, Menu, X, Sun, Moon } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
@@ -14,6 +14,8 @@ const Header = () => {
     const { wishlistCount } = useWishlist();
     const { theme, toggleTheme } = useTheme();
     const navigate = useNavigate();
+    const location = useLocation();
+    const isHome = location.pathname === '/';
     const [searchQuery, setSearchQuery] = useState('');
     const [showUserMenu, setShowUserMenu] = useState(false);
     const userMenuRef = useRef<HTMLDivElement>(null);
@@ -169,20 +171,22 @@ const Header = () => {
             </div>
 
             {/* Anime nav - Horizontal scroll on mobile */}
-            <nav style={{ borderTop: '1px solid var(--border)', background: 'var(--surface)' }}>
-                <div className="container" style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', padding: '0.6rem 1rem', scrollbarWidth: 'none' }}>
-                    {categories.map(cat => (
-                        <Link
-                            key={cat}
-                            to={cat === 'All' ? '/shop' : `/shop?anime=${encodeURIComponent(cat)}`}
-                            className="chip"
-                            style={{ flexShrink: 0, padding: '0.35rem 1rem', fontSize: '0.85rem' }}
-                        >
-                            {cat}
-                        </Link>
-                    ))}
-                </div>
-            </nav>
+            {isHome && (
+                <nav style={{ borderTop: '1px solid var(--border)', background: 'var(--surface)' }}>
+                    <div className="container" style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', padding: '0.6rem 1rem', scrollbarWidth: 'none' }}>
+                        {categories.map(cat => (
+                            <Link
+                                key={cat}
+                                to={cat === 'All' ? '/shop' : `/shop?anime=${encodeURIComponent(cat)}`}
+                                className="chip"
+                                style={{ flexShrink: 0, padding: '0.35rem 1rem', fontSize: '0.85rem' }}
+                            >
+                                {cat}
+                            </Link>
+                        ))}
+                    </div>
+                </nav>
+            )}
         </header>
     );
 };
