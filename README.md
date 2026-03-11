@@ -66,6 +66,26 @@
    npm run build
    ```
 
+## 🌐 Deployment to Vercel
+
+### Step-by-Step Guide
+1. **Push your code to GitHub**: (Already done!)
+   - Ensure all recent changes (including the new `vercel.json`) are pushed.
+2. **Connect to Vercel**:
+   - Go to [vercel.com](https://vercel.com) and log in with GitHub.
+   - Click **"Add New..."** > **"Project"**.
+   - Select your repository: `PosterSensei_Frontend`.
+3. **Configure Settings**:
+   - **Framework Preset**: Vite
+   - **Root Directory**: `./`
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `dist`
+4. **Deploy**:
+   - Click **Deploy**. Vercel will automatically handle the build and give you a live URL.
+
+> [!NOTE]
+> The `vercel.json` file in this repository has been configured to support Single Page Application (SPA) routing, so refreshing on sub-pages will work correctly.
+
 ## 📂 Project Structure
 ```text
 src/
