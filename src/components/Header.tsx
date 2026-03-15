@@ -429,12 +429,16 @@ const Header = () => {
                         boxShadow: location.pathname === '/' ? 'var(--shadow-md)' : 'none'
                     }}
                 >
-                    <div style={{ background: location.pathname === '/' ? 'var(--primary)' : 'transparent', color: location.pathname === '/' ? 'white' : 'inherit', padding: '8px', borderRadius: '50%' }}>
-                        <motion.div whileTap={{ scale: 0.9 }}>
-                            <Home size={28} />
-                        </motion.div>
-                        <span style={{ fontSize: '0.65rem', fontWeight: 800 }}>HOME</span>
-                    </div>
+                    <div style={{ 
+    color: location.pathname === '/' ? 'white' : 'inherit', 
+    padding: '8px', 
+    borderRadius: '50%' 
+}}>
+    <motion.div whileTap={{ scale: 0.9 }}>
+        <Home size={28} />
+    </motion.div>
+    <span style={{ fontSize: '0.65rem', fontWeight: 800 }}>HOME</span>
+</div>
                 </Link>
 
                 <div style={{ position: 'relative' }}>
