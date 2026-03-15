@@ -180,7 +180,7 @@ const UserProfile = () => {
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                                 <Link to="/orders" style={{ textDecoration: 'none', color: 'inherit' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem 1.25rem', borderRadius: '20px', fontWeight: 700, opacity: 0.7 }}>
-                                        <ShoppingBag size={18} /> My Projects
+                                        <ShoppingBag size={18} /> My Orders
                                     </div>
                                 </Link>
                                 <Link to="/wishlist" style={{ textDecoration: 'none', color: 'inherit' }}>

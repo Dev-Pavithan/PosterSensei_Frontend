@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
-    TrendingUp, ArrowRight, Clock, Activity, BarChart3, Star, Zap, Target
+    TrendingUp, ArrowRight, Clock, Activity, BarChart3, Star, Zap, Target,
+    Package, ShoppingBag, DollarSign, Users, RefreshCw, ChevronRight
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import axios from 'axios';
@@ -9,7 +10,15 @@ import { useAuth } from '../contexts/AuthContext';
 
 const AdminDashboard = () => {
     const { user } = useAuth();
-    const [stats, setStats] = useState<any>({ totalOrders: 0, totalRevenue: 0, pendingOrders: 0, deliveredOrders: 0, revenueByDay: [], topProducts: [], statusDistribution: [] });
+    const [stats, setStats] = useState<any>({ 
+        totalOrders: 0, 
+        totalRevenue: 0, 
+        pendingOrders: 0, 
+        deliveredOrders: 0, 
+        revenueByDay: [], 
+        topProducts: [], 
+        statusDistribution: [] 
+    });
     const [recentOrders, setRecentOrders] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshTime, setRefreshTime] = useState(new Date());
@@ -32,119 +41,463 @@ const AdminDashboard = () => {
     }, []);
 
     const KPI_CARDS = [
-        { icon: <TrendingUp size={24} />, label: 'Revenue', value: `LKR ${stats.totalRevenue.toLocaleString()}`, trend: '+12.5%', bg: 'linear-gradient(135deg, #6366f1, #a855f7)', size: 'large' },
-        { icon: <Zap size={24} />, label: 'Orders', value: stats.totalOrders, trend: '+8.2%', bg: 'linear-gradient(135deg, #10b981, #3b82f6)', size: 'small' },
-        { icon: <Clock size={24} />, label: 'Pending', value: stats.pendingOrders, trend: '-2.4%', bg: 'linear-gradient(135deg, #f59e0b, #ef4444)', size: 'small' },
-        { icon: <Activity size={24} />, label: 'Delivered', value: stats.deliveredOrders, trend: '+4.1%', bg: 'linear-gradient(135deg, #8b5cf6, #ec4899)', size: 'medium' },
+        { 
+            icon: <DollarSign size={24} />, 
+            label: 'Revenue', 
+            value: `LKR ${stats.totalRevenue?.toLocaleString() || 0}`, 
+            change: '+12.5%', 
+            color: 'from-blue-500 to-indigo-600',
+            iconBg: 'bg-blue-100 dark:bg-blue-900/30',
+            iconColor: 'text-blue-600 dark:text-blue-400'
+        },
+        { 
+            icon: <ShoppingBag size={24} />, 
+            label: 'Total Orders', 
+            value: stats.totalOrders || 0, 
+            change: '+8.2%', 
+            color: 'from-emerald-500 to-teal-600',
+            iconBg: 'bg-emerald-100 dark:bg-emerald-900/30',
+            iconColor: 'text-emerald-600 dark:text-emerald-400'
+        },
+        { 
+            icon: <Clock size={24} />, 
+            label: 'Pending', 
+            value: stats.pendingOrders || 0, 
+            change: '-2.4%', 
+            color: 'from-amber-500 to-orange-600',
+            iconBg: 'bg-amber-100 dark:bg-amber-900/30',
+            iconColor: 'text-amber-600 dark:text-amber-400'
+        },
+        { 
+            icon: <Package size={24} />, 
+            label: 'Delivered', 
+            value: stats.deliveredOrders || 0, 
+            change: '+4.1%', 
+            color: 'from-purple-500 to-pink-600',
+            iconBg: 'bg-purple-100 dark:bg-purple-900/30',
+            iconColor: 'text-purple-600 dark:text-purple-400'
+        },
     ];
 
     const maxRev = Math.max(...(stats.revenueByDay?.map((d: any) => d.revenue) || [1]));
 
+    // Animation variants
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.1
+            }
+        }
+    };
+
+    const itemVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: { opacity: 1, y: 0 }
+    };
+
     return (
-        <div className="container" style={{ paddingBottom: '4rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '3rem', flexWrap: 'wrap', gap: '2rem' }}>
+        <motion.div 
+            className="container"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            style={{ paddingBottom: '4rem' }}
+        >
+            {/* Header Section */}
+            <motion.div 
+                variants={itemVariants}
+                style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'space-between', 
+                    marginBottom: '3rem',
+                    flexWrap: 'wrap',
+                    gap: '1.5rem'
+                }}
+            >
                 <div>
-                    <h2 style={{ fontWeight: 900, fontSize: '2.5rem', color: 'var(--text-primary)', letterSpacing: '-1px' }}>Studio Insight</h2>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.5rem', fontWeight: 600 }}>
-                        <div style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--success)', boxShadow: '0 0 10px var(--success)' }} /> 
-                        Live Terminal · Synced {refreshTime.toLocaleTimeString()}
+                    <h1 style={{ 
+                        fontSize: '2.5rem', 
+                        fontWeight: 800, 
+                        color: 'var(--text-primary)',
+                        letterSpacing: '-0.02em',
+                        marginBottom: '0.5rem'
+                    }}>
+                        Dashboard
+                    </h1>
+                    <div style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '1rem',
+                        color: 'var(--text-muted)',
+                        fontSize: '0.9rem'
+                    }}>
+                        <span>Welcome back, {user?.name?.split(' ')[0] || 'Admin'}</span>
+                        <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: 'var(--border)' }} />
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <RefreshCw size={14} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
+                            <span>Updated {refreshTime.toLocaleTimeString()}</span>
+                        </div>
                     </div>
                 </div>
                 <div style={{ display: 'flex', gap: '1rem' }}>
-                    <Link to="/admin/products" className="btn-ghost-admin" style={{ border: '1px solid var(--border)', background: 'var(--surface)', paddingInline: '1.5rem' }}>Inventory</Link>
-                    <Link to="/admin/orders" className="btn btn-primary" style={{ paddingInline: '2rem', borderRadius: '16px', fontWeight: 800 }}>Dispatch Hub</Link>
-                </div>
-            </div>
-
-            <div className="bento-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gridAutoRows: 'minmax(160px, auto)', gap: '1.5rem', marginBottom: '3rem' }}>
-                {KPI_CARDS.map(({ icon, label, value, trend, bg, size }, idx) => (
-                    <motion.div 
-                        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.1 }} key={label}
+                    <Link 
+                        to="/admin/products" 
                         style={{ 
-                            gridColumn: size === 'large' ? 'span 2' : size === 'medium' ? 'span 2' : 'span 1',
-                            gridRow: size === 'large' ? 'span 2' : 'span 1',
-                            background: bg, borderRadius: '32px', padding: '2rem', color: 'white', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'space-between'
+                            padding: '0.75rem 1.5rem',
+                            background: 'var(--surface)',
+                            border: '1px solid var(--border)',
+                            borderRadius: '12px',
+                            color: 'var(--text-primary)',
+                            fontWeight: 600,
+                            fontSize: '0.95rem',
+                            transition: 'all 0.2s',
+                            textDecoration: 'none'
+                        }}
+                        onMouseEnter={e => {
+                            e.currentTarget.style.background = 'var(--surface-2)';
+                            e.currentTarget.style.borderColor = 'var(--primary)';
+                        }}
+                        onMouseLeave={e => {
+                            e.currentTarget.style.background = 'var(--surface)';
+                            e.currentTarget.style.borderColor = 'var(--border)';
                         }}
                     >
-                        <div style={{ position: 'absolute', top: '-10%', right: '-10%', width: '40%', height: '40%', background: 'rgba(255,255,255,0.1)', borderRadius: '50%', filter: 'blur(40px)' }} />
-                        <div style={{ position: 'relative', zIndex: 1 }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                <div style={{ width: 48, height: 48, borderRadius: '16px', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(10px)' }}>{icon}</div>
-                                <span style={{ fontSize: '0.8rem', fontWeight: 900, padding: '4px 12px', background: 'rgba(255,255,255,0.2)', borderRadius: '20px', backdropFilter: 'blur(10px)' }}>{trend}</span>
+                        Manage Products
+                    </Link>
+                    <Link 
+                        to="/admin/orders" 
+                        style={{ 
+                            padding: '0.75rem 1.5rem',
+                            background: 'var(--primary)',
+                            border: 'none',
+                            borderRadius: '12px',
+                            color: 'white',
+                            fontWeight: 600,
+                            fontSize: '0.95rem',
+                            transition: 'all 0.2s',
+                            textDecoration: 'none'
+                        }}
+                        onMouseEnter={e => {
+                            e.currentTarget.style.background = 'var(--primary-dark)';
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                        }}
+                        onMouseLeave={e => {
+                            e.currentTarget.style.background = 'var(--primary)';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                        }}
+                    >
+                        View Orders
+                    </Link>
+                </div>
+            </motion.div>
+
+            {/* KPI Cards */}
+            <motion.div 
+                variants={containerVariants}
+                className="bento-grid"
+                style={{ 
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+                    gap: '1.5rem',
+                    marginBottom: '2.5rem'
+                }}
+            >
+                {KPI_CARDS.map((card, idx) => (
+                    <motion.div
+                        key={card.label}
+                        variants={itemVariants}
+                        whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                        style={{ 
+                            background: 'var(--surface)',
+                            border: '1px solid var(--border)',
+                            borderRadius: '24px',
+                            padding: '1.5rem',
+                            transition: 'all 0.2s'
+                        }}
+                    >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                            <div style={{ 
+                                width: '48px',
+                                height: '48px',
+                                borderRadius: '16px',
+                                background: card.iconBg,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: card.iconColor
+                            }}>
+                                {card.icon}
                             </div>
-                            <div style={{ marginTop: '2rem' }}>
-                                <div style={{ fontSize: '0.9rem', fontWeight: 700, opacity: 0.8, textTransform: 'uppercase', letterSpacing: '1px' }}>{label}</div>
-                                <div style={{ fontSize: size === 'large' ? '2.5rem' : '1.8rem', fontWeight: 900, marginTop: '0.5rem' }}>{loading ? '...' : value}</div>
-                            </div>
+                            <span style={{ 
+                                fontSize: '0.85rem',
+                                fontWeight: 600,
+                                padding: '0.25rem 0.75rem',
+                                background: card.change.startsWith('+') ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                color: card.change.startsWith('+') ? '#10b981' : '#ef4444',
+                                borderRadius: '20px'
+                            }}>
+                                {card.change}
+                            </span>
+                        </div>
+                        <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>
+                            {card.label}
+                        </div>
+                        <div style={{ fontSize: '1.8rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                            {loading ? '...' : card.value}
                         </div>
                     </motion.div>
                 ))}
-            </div>
+            </motion.div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '2rem', marginBottom: '3rem' }}>
-                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} style={{ background: 'var(--surface)', padding: '2.5rem', borderRadius: '40px', border: '1px solid var(--border)' }}>
-                    <h3 style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '2.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <BarChart3 size={28} color="var(--primary)" /> Velocity Curve
-                    </h3>
-                    <div style={{ height: '300px', display: 'flex', alignItems: 'flex-end', gap: '20px', paddingBottom: '30px' }}>
+            {/* Charts Section */}
+            <div className="velocity-curve-container" style={{ 
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
+                gap: '2rem',
+                marginBottom: '3rem'
+            }}>
+                {/* Revenue Chart */}
+                <motion.div
+                    variants={itemVariants}
+                    style={{ 
+                        background: 'var(--surface)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '24px',
+                        padding: '1.5rem'
+                    }}
+                >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                        <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                            Revenue Overview
+                        </h3>
+                        <BarChart3 size={20} color="var(--text-muted)" />
+                    </div>
+                    
+                    <div style={{ height: '200px', display: 'flex', alignItems: 'flex-end', gap: '8px' }}>
                         {stats.revenueByDay?.map((day: any, i: number) => (
-                            <div key={day._id} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', height: '100%' }}>
-                                <div style={{ flex: 1, width: '100%', display: 'flex', alignItems: 'flex-end' }}>
-                                    <motion.div initial={{ height: 0 }} animate={{ height: `${(day.revenue / (maxRev || 1)) * 100}%` }} transition={{ delay: i * 0.05 + 0.5 }}
-                                        style={{ width: '100%', background: 'linear-gradient(to top, var(--primary), var(--secondary))', borderRadius: '12px' }} />
+                            <div key={day._id} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                                <div style={{ width: '100%', position: 'relative', height: '150px', display: 'flex', alignItems: 'flex-end' }}>
+                                    <motion.div
+                                        initial={{ height: 0 }}
+                                        animate={{ height: `${(day.revenue / (maxRev || 1)) * 100}%` }}
+                                        transition={{ delay: i * 0.02, duration: 0.5 }}
+                                        style={{
+                                            width: '100%',
+                                            background: 'linear-gradient(180deg, var(--primary) 0%, var(--secondary) 100%)',
+                                            borderRadius: '8px 8px 4px 4px',
+                                            position: 'relative'
+                                        }}
+                                    >
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '-20px',
+                                            left: '50%',
+                                            transform: 'translateX(-50%)',
+                                            fontSize: '0.7rem',
+                                            fontWeight: 600,
+                                            color: 'var(--text-muted)',
+                                            whiteSpace: 'nowrap',
+                                            opacity: 0,
+                                            transition: 'opacity 0.2s'
+                                        }}>
+                                            LKR {day.revenue.toLocaleString()}
+                                        </div>
+                                    </motion.div>
                                 </div>
-                                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 800 }}>{new Date(day._id).toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase()}</div>
+                                <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-muted)' }}>
+                                    {new Date(day._id).toLocaleDateString('en-US', { weekday: 'short' })}
+                                </div>
                             </div>
                         ))}
                     </div>
                 </motion.div>
-                <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} style={{ background: 'var(--surface)', padding: '2.5rem', borderRadius: '40px', border: '1px solid var(--border)' }}>
-                    <h3 style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '2.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <Star size={28} color="#f59e0b" /> Hall of Fame
-                    </h3>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                        {stats.topProducts?.slice(0, 4).map((p: any, i: number) => (
-                            <div key={p._id} style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-                                <img src={p.image} alt="" style={{ width: 64, height: 64, borderRadius: '16px', objectFit: 'cover' }} />
-                                <div style={{ flex: 1 }}>
-                                    <div style={{ fontWeight: 800, fontSize: '1rem' }}>{p.title}</div>
-                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 700 }}>{p.totalQty} Sales</div>
+
+                {/* Top Products */}
+                <motion.div
+                    variants={itemVariants}
+                    style={{ 
+                        background: 'var(--surface)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '24px',
+                        padding: '1.5rem'
+                    }}
+                >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                        <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                            Top Products
+                        </h3>
+                        <Star size={20} color="var(--text-muted)" />
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        {stats.topProducts?.slice(0, 4).map((product: any, i: number) => (
+                            <div key={product._id} style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                <div style={{ 
+                                    width: '40px',
+                                    height: '40px',
+                                    borderRadius: '12px',
+                                    background: 'var(--surface-2)',
+                                    overflow: 'hidden',
+                                    flexShrink: 0
+                                }}>
+                                    {product.image && (
+                                        <img 
+                                            src={product.image} 
+                                            alt="" 
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        />
+                                    )}
                                 </div>
-                                <div style={{ fontWeight: 900, color: 'var(--primary)' }}>LKR {p.totalRevenue.toLocaleString()}</div>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{ 
+                                        fontWeight: 600, 
+                                        color: 'var(--text-primary)',
+                                        marginBottom: '0.25rem',
+                                        whiteSpace: 'nowrap',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis'
+                                    }}>
+                                        {product.title}
+                                    </div>
+                                    <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                                        {product.totalQty} sold
+                                    </div>
+                                </div>
+                                <div style={{ fontWeight: 700, color: 'var(--primary)' }}>
+                                    LKR {product.totalRevenue?.toLocaleString()}
+                                </div>
                             </div>
                         ))}
                     </div>
                 </motion.div>
             </div>
 
-            <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} style={{ background: 'var(--surface)', borderRadius: '40px', border: '1px solid var(--border)', overflow: 'hidden' }}>
-                <div style={{ padding: '2.5rem', borderBottom: '1px solid var(--border)' }}>
-                    <h3 style={{ fontWeight: 900, fontSize: '1.5rem' }}>Live Transmission</h3>
+            {/* Recent Orders Table */}
+            <motion.div
+                variants={itemVariants}
+                style={{ 
+                    background: 'var(--surface)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '24px',
+                    overflow: 'hidden'
+                }}
+            >
+                <div style={{ 
+                    padding: '1.5rem',
+                    borderBottom: '1px solid var(--border)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                }}>
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                        Recent Orders
+                    </h3>
+                    <Link 
+                        to="/admin/orders"
+                        style={{ 
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            color: 'var(--primary)',
+                            fontSize: '0.9rem',
+                            fontWeight: 600,
+                            textDecoration: 'none'
+                        }}
+                    >
+                        View All <ChevronRight size={16} />
+                    </Link>
                 </div>
+
                 <div style={{ overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
                             <tr style={{ background: 'var(--surface-2)' }}>
-                                {['Code', 'Agent', 'Volume', 'Status', 'Timestamp'].map(h => (
-                                    <th key={h} style={{ padding: '1.25rem 2.5rem', textAlign: 'left', fontWeight: 800, fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>{h}</th>
-                                ))}
+                                <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>Order ID</th>
+                                <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>Customer</th>
+                                <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>Amount</th>
+                                <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>Status</th>
+                                <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>Time</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {recentOrders.map((o) => (
-                                <tr key={o._id} style={{ borderBottom: '1px solid var(--border)' }}>
-                                    <td style={{ padding: '1.5rem 2.5rem', fontWeight: 900, color: 'var(--primary)', fontFamily: 'monospace' }}>{o._id?.slice(-8).toUpperCase()}</td>
-                                    <td style={{ padding: '1.5rem 2.5rem' }}>{o.user?.name}</td>
-                                    <td style={{ padding: '1.5rem 2.5rem', fontWeight: 900 }}>LKR {o.totalPrice.toLocaleString()}</td>
-                                    <td style={{ padding: '1.5rem 2.5rem' }}>{o.status}</td>
-                                    <td style={{ padding: '1.5rem 2.5rem', color: 'var(--text-muted)' }}>{new Date(o.createdAt).toLocaleTimeString()}</td>
-                                </tr>
+                            {recentOrders.map((order, idx) => (
+                                <motion.tr 
+                                    key={order._id}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: idx * 0.05 }}
+                                    style={{ borderBottom: '1px solid var(--border)' }}
+                                >
+                                    <td style={{ padding: '1rem 1.5rem', fontFamily: 'monospace', fontWeight: 600, color: 'var(--primary)' }}>
+                                        #{order._id?.slice(-8).toUpperCase()}
+                                    </td>
+                                    <td style={{ padding: '1rem 1.5rem', color: 'var(--text-primary)' }}>
+                                        {order.user?.name || 'Guest'}
+                                    </td>
+                                    <td style={{ padding: '1rem 1.5rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                                        LKR {order.totalPrice?.toLocaleString()}
+                                    </td>
+                                    <td style={{ padding: '1rem 1.5rem' }}>
+                                        <span style={{
+                                            padding: '0.25rem 0.75rem',
+                                            borderRadius: '20px',
+                                            fontSize: '0.85rem',
+                                            fontWeight: 600,
+                                            background: order.status === 'delivered' ? 'rgba(16, 185, 129, 0.1)' :
+                                                        order.status === 'pending' ? 'rgba(245, 158, 11, 0.1)' :
+                                                        'rgba(59, 130, 246, 0.1)',
+                                            color: order.status === 'delivered' ? '#10b981' :
+                                                   order.status === 'pending' ? '#f59e0b' :
+                                                   '#3b82f6'
+                                        }}>
+                                            {order.status?.charAt(0).toUpperCase() + order.status?.slice(1)}
+                                        </span>
+                                    </td>
+                                    <td style={{ padding: '1rem 1.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                                        {new Date(order.createdAt).toLocaleTimeString()}
+                                    </td>
+                                </motion.tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
             </motion.div>
-        </div>
+
+            <style>{`
+                @keyframes spin {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                }
+
+                @media (max-width: 768px) {
+                    .container {
+                        padding-inline: 1rem !important;
+                    }
+                    h1 {
+                        font-size: 2rem !important;
+                    }
+                    .bento-grid {
+                        grid-template-columns: 1fr !important;
+                    }
+                    .bento-grid > div {
+                        grid-column: span 1 !important;
+                        grid-row: span 1 !important;
+                        height: auto !important;
+                        min-height: 160px;
+                    }
+                    .velocity-curve-container {
+                        grid-template-columns: 1fr !important;
+                    }
+                    table th:nth-child(4), table td:nth-child(4),
+                    table th:nth-child(5), table td:nth-child(5) {
+                        display: none;
+                    }
+                }
+            `}</style>
+        </motion.div>
     );
 };
 

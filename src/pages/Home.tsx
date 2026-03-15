@@ -281,43 +281,72 @@ const Home = () => {
     </motion.div>
 </div>
 
-            {/* CATEGORIES: Bento Grid */}
-            <section className="container" style={{ marginBlock: '10vw' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '4rem' }}>
-                    <div>
-                        <div style={{ fontSize: '0.8rem', fontWeight: 900, color: 'var(--primary)', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '1rem' }}>Browse the Universe</div>
-                        <h2 style={{ fontSize: 'var(--font-xl)', fontWeight: 900 }}>Shop by Anime</h2>
+            {/* CATEGORIES: Dynamic Collage */}
+            <section style={{ paddingBlock: '10vw' }}>
+                <div className="container">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '5vw' }}>
+                        <div>
+                            <div style={{ fontSize: '0.8rem', fontWeight: 900, color: 'var(--primary)', letterSpacing: '0.4em', marginBottom: '1rem' }}>COLLECTIONS</div>
+                            <h2 style={{ fontSize: 'clamp(2.5rem, 6vw, 5rem)', fontWeight: 900, lineHeight: 0.9 }}>Shop by Anime</h2>
+                        </div>
+                        <Link to="/shop" className="btn" style={{ 
+                            borderRadius: '100px', 
+                            marginBottom: '0.5rem',
+                            background: 'rgba(255, 255, 255, 0.05)',
+                            backdropFilter: 'blur(10px)',
+                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                            color: 'white',
+                            padding: '0.75rem 2rem',
+                            fontWeight: 800,
+                            fontSize: '0.9rem',
+                            letterSpacing: '1px'
+                        }}>View Collections</Link>
                     </div>
-                    <Link to="/shop" className="btn btn-ghost" style={{ borderRadius: '100px', fontWeight: 700 }}>View Complete List <ChevronRight size={18} /></Link>
-                </div>
 
-                <div className="bento-category-grid" style={{ 
-                    display: 'grid', 
-                    gridTemplateColumns: 'repeat(12, 1fr)', 
-                    gridAutoRows: 'minmax(200px, auto)',
-                    gap: '1.5rem' 
-                }}>
-                    {categories.map((cat, i) => {
-                        const span = i === 0 ? 'span 6' : i === 1 ? 'span 6' : 'span 4';
-                        const height = i < 2 ? '400px' : '300px';
-                        return (
-                            <motion.div 
-                                className="bento-item"
-                                key={cat.name}
-                                whileHover={{ scale: 0.98 }}
-                                style={{ gridColumn: span, height, borderRadius: '32px', overflow: 'hidden', position: 'relative', background: 'var(--surface-2)' }}
-                            >
-                                <Link to={`/shop?anime=${encodeURIComponent(cat.name)}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                                    <img src={cat.img} alt={cat.name} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6 }} />
-                                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent 60%)' }} />
-                                    <div style={{ position: 'absolute', bottom: '2rem', left: '2rem' }}>
-                                        <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'white' }}>{cat.name}</div>
-                                        <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.7)', fontWeight: 700 }}>Explore Collection →</div>
-                                    </div>
-                                </Link>
-                            </motion.div>
-                        );
-                    })}
+                    <div className="collage-grid" style={{ 
+                        display: 'grid', 
+                        gridTemplateColumns: 'repeat(12, 1fr)', 
+                        gridAutoRows: 'minmax(200px, auto)',
+                        gap: '1.5rem' 
+                    }}>
+                        {categories.map((cat, i) => {
+                            const spans = [
+                                { col: 'span 7', row: 'span 2', h: '600px', font: '2.5rem' },
+                                { col: 'span 5', row: 'span 1', h: '290px', font: '1.5rem' },
+                                { col: 'span 5', row: 'span 1', h: '290px', font: '1.5rem' },
+                                { col: 'span 4', row: 'span 1', h: '300px', font: '1.5rem' },
+                                { col: 'span 4', row: 'span 1', h: '300px', font: '1.5rem' },
+                                { col: 'span 4', row: 'span 1', h: '300px', font: '1.5rem' }
+                            ];
+                            const style = spans[i % spans.length];
+
+                            return (
+                                <motion.div 
+                                    className="collage-item"
+                                    key={cat.name}
+                                    whileHover={{ y: -10 }}
+                                    style={{ 
+                                        gridColumn: style.col, 
+                                        gridRow: style.row,
+                                        height: style.h,
+                                        borderRadius: '32px', 
+                                        overflow: 'hidden', 
+                                        position: 'relative', 
+                                        background: 'var(--surface-2)',
+                                        border: '1px solid var(--border)'
+                                    }}
+                                >
+                                    <Link to={`/shop?anime=${encodeURIComponent(cat.name)}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block', height: '100%' }}>
+                                        <img src={cat.img} alt={cat.name} style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)' }} />
+                                        <div/>
+                                        <div style={{ position: 'absolute', bottom: '2.5rem', left: '2.5rem', right: '2.5rem' }}>
+                                            <div style={{ fontSize: style.font, fontWeight: 900, color: 'white', lineHeight: 1.1, marginBottom: '0.5rem' }}>{cat.name}</div>
+                                        </div>
+                                    </Link>
+                                </motion.div>
+                            );
+                        })}
+                    </div>
                 </div>
             </section>
 
@@ -447,8 +476,11 @@ const Home = () => {
             </section>
 
             <style>{`
-                .bento-category-grid {
+                .collage-grid {
                     perspective: 1000px;
+                }
+                .collage-item:hover img {
+                    transform: scale(1.05);
                 }
                 .hover-action-overlay {
                     position: absolute;
@@ -475,13 +507,38 @@ const Home = () => {
                     50% { opacity: 0.3; }
                     100% { opacity: 0.1; }
                 }
-                @media (max-width: 900px) {
-                    .bento-category-grid {
-                        display: flex !important;
-                        flex-direction: column !important;
+                @media (max-width: 1000px) {
+                    .collage-grid {
+                        grid-template-columns: repeat(2, 1fr) !important;
+                        gap: 0.75rem !important;
                     }
-                    .bento-item {
+                    .collage-item {
+                        grid-column: span 1 !important;
+                        grid-row: span 1 !important;
                         height: 250px !important;
+                    }
+                    /* Re-enable collage feel by making the first item larger even on mobile */
+                    .collage-item:nth-child(1) {
+                        grid-column: span 2 !important;
+                        height: 400px !important;
+                    }
+                    .collage-item h2, .collage-item div {
+                        left: 1rem !important;
+                        bottom: 1rem !important;
+                    }
+                    .collage-item div {
+                        font-size: 1.2rem !important;
+                    }
+                }
+                @media (max-width: 500px) {
+                    .collage-grid {
+                        gap: 0.5rem !important;
+                    }
+                    .collage-item {
+                        height: 200px !important;
+                    }
+                    .collage-item:nth-child(1) {
+                        height: 300px !important;
                     }
                 }
             `}</style>

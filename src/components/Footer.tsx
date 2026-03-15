@@ -26,30 +26,30 @@ const Footer = () => {
             {/* Trust badges */}
             {isHome && (
                 <div style={{ background: '#f9fafb', borderTop: '1px solid var(--border)', padding: '1.5rem 0' }}>
-                <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
-                    {trust.map(({ icon, title, desc }) => (
-                        <div key={title} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-                            <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#ff007f15', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ff007f', flexShrink: 0 }}>
-                                {icon}
+                    <div className="container trust-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
+                        {trust.map(({ icon, title, desc }) => (
+                            <div key={title} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                                <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#ff007f15', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ff007f', flexShrink: 0 }}>
+                                    {icon}
+                                </div>
+                                <div>
+                                    <div style={{ fontWeight: 700, fontSize: '0.875rem', color: '#1f2937' }}>{title}</div>
+                                    <div style={{ fontSize: '0.78rem', color: '#6b7280' }}>{desc}</div>
+                                </div>
                             </div>
-                            <div>
-                                <div style={{ fontWeight: 700, fontSize: '0.875rem', color: '#1f2937' }}>{title}</div>
-                                <div style={{ fontSize: '0.78rem', color: '#6b7280' }}>{desc}</div>
-                            </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
-            </div>
             )}
 
             {/* Main footer */}
-            <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2rem', padding: '3rem 1.5rem' }}>
+            <div className="container footer-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2rem', padding: '3rem 1.5rem' }}>
                 {/* Brand */}
-                <div>
+                <div className="footer-brand">
                     <div style={{ fontWeight: 800, fontSize: '1.4rem', marginBottom: '0.8rem' }}>
                         Poster<span style={{ color: 'var(--primary)' }}>Sensei</span>
                     </div>
-                    <p style={{ color: '#9ca3af', fontSize: '0.875rem', lineHeight: 1.7, marginBottom: '1rem' }}>
+                    <p style={{ color: '#9ca3af', fontSize: '0.875rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
                         Turn Your Walls into Anime Worlds. Premium quality anime & cartoon poster printing, delivered to your door or installed by our team.
                     </p>
                     <div style={{ display: 'flex', gap: '0.75rem' }}>
@@ -64,7 +64,7 @@ const Footer = () => {
                 </div>
 
                 {/* Shop links */}
-                <div>
+                <div className="footer-links">
                     <div style={{ fontWeight: 700, marginBottom: '1rem', color: 'white' }}>Anime</div>
                     <Link to="/shop" style={{ display: 'block', color: '#9ca3af', fontSize: '0.875rem', marginBottom: '0.5rem', transition: 'color var(--transition)' }}
                         onMouseEnter={e => e.currentTarget.style.color = 'var(--primary)'}
@@ -83,7 +83,7 @@ const Footer = () => {
                 </div>
 
                 {/* Company links */}
-                <div>
+                <div className="footer-links">
                     <div style={{ fontWeight: 700, marginBottom: '1rem', color: 'white' }}>Company</div>
                     {[
                         ['About Us', '/about'],
@@ -98,7 +98,7 @@ const Footer = () => {
                 </div>
 
                 {/* Account links */}
-                <div>
+                <div className="footer-links">
                     <div style={{ fontWeight: 700, marginBottom: '1rem', color: 'white' }}>My Account</div>
                     {[['My Profile', '/profile'], ['My Orders', '/orders'], ['Wishlist', '/wishlist'], ['Cart', '/cart']].map(([label, to]) => (
                         <Link key={label} to={to} style={{ display: 'block', color: '#9ca3af', fontSize: '0.875rem', marginBottom: '0.5rem', transition: 'color var(--transition)' }}
@@ -108,7 +108,7 @@ const Footer = () => {
                 </div>
 
                 {/* Contact */}
-                <div>
+                <div className="footer-contact">
                     <div style={{ fontWeight: 700, marginBottom: '1rem', color: 'white' }}>Contact Us</div>
                     {[
                         { icon: <Mail size={14} />, text: 'postersenseianime@gmail.com' },
@@ -122,9 +122,50 @@ const Footer = () => {
                 </div>
             </div>
 
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', padding: '1rem', textAlign: 'center', color: '#6b7280', fontSize: '0.8rem' }}>
+            <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', padding: '1.5rem', textAlign: 'center', color: '#6b7280', fontSize: '0.8rem' }}>
                 © {new Date().getFullYear()} PosterSensei. All rights reserved. Made with ❤️ for anime fans.
             </div>
+
+            <style>{`
+                @media (max-width: 768px) {
+                    .footer-grid {
+                        grid-template-columns: repeat(2, 1fr) !important;
+                        gap: 2.5rem 1.5rem !important;
+                        padding-top: 2rem !important;
+                    }
+                    .footer-brand {
+                        grid-column: span 2 !important;
+                        margin-bottom: 1rem;
+                    }
+                    .footer-contact {
+                        grid-column: span 2 !important;
+                        margin-top: 1rem;
+                        padding-top: 1.5rem;
+                        border-top: 1px solid rgba(255,255,255,0.05);
+                    }
+                }
+                @media (max-width: 480px) {
+                    .footer-grid {
+                        grid-template-columns: 1fr !important;
+                        text-align: center;
+                    }
+                    .footer-brand, .footer-contact {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                    }
+                    .footer-brand p {
+                        max-width: 300px;
+                    }
+                    .footer-contact div {
+                        justify-content: center;
+                    }
+                    .trust-grid {
+                        grid-template-columns: 1fr !important;
+                        padding-inline: 2rem !important;
+                    }
+                }
+            `}</style>
         </footer>
     );
 };
