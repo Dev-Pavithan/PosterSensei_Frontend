@@ -389,132 +389,153 @@ const Header = () => {
                 )}
             </AnimatePresence>
 
-            {/* Mobile Bottom Navigation */}
-            <div className="mobile-bottom-nav" style={{ 
-                position: 'fixed', 
-                bottom: 0, 
-                left: 0, 
-                right: 0, 
-                background: 'var(--surface)', 
-                borderTop: '1px solid var(--border)', 
-                padding: '0.75rem 1.5rem', 
-                display: 'none', // Shown via CSS injected above
-                justifyContent: 'space-between', 
-                alignItems: 'center', 
-                zIndex: 1001,
-                boxShadow: '0 -4px 12px rgba(0,0,0,0.05)'
-            }}>
-                <button 
-                    onClick={() => setMobileMenuOpen(true)}
-                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', color: mobileMenuOpen ? 'var(--primary)' : 'var(--text-secondary)' }}
-                >
-                    <Menu size={24} />
-                    <span style={{ fontSize: '0.65rem', fontWeight: 800 }}>MENU</span>
-                </button>
-
-                <Link 
-                    to="/" 
-                    onClick={() => setMobileMenuOpen(false)}
-                    style={{ 
-                        display: 'flex', 
-                        flexDirection: 'column', 
-                        alignItems: 'center', 
-                        gap: '6px', 
-                        color: location.pathname === '/' ? 'var(--primary)' : 'var(--text-secondary)',
-                        background: location.pathname === '/' ? 'var(--primary-light)' : 'transparent',
-                        padding: '8px 24px',
-                        borderRadius: '20px',
-                        marginTop: '-15px',
-                        border: location.pathname === '/' ? '2px solid var(--primary)' : 'none',
-                        boxShadow: location.pathname === '/' ? 'var(--shadow-md)' : 'none'
-                    }}
-                >
-                    <div style={{ 
-    color: location.pathname === '/' ? 'white' : 'inherit', 
-    padding: '8px', 
-    borderRadius: '50%' 
+{/* Mobile Bottom Navigation */}
+<div className="mobile-bottom-nav" style={{ 
+    position: 'fixed', 
+    bottom: 0, 
+    left: 0, 
+    right: 0, 
+    background: 'var(--surface)', 
+    borderTop: '1px solid var(--border)', 
+    padding: '0.75rem 1.5rem', 
+    display: 'none', // Shown via CSS injected above
+    justifyContent: 'space-between', 
+    alignItems: 'center', 
+    zIndex: 1001,
+    boxShadow: '0 -4px 12px rgba(0,0,0,0.05)'
 }}>
-    <motion.div whileTap={{ scale: 0.9 }}>
-        <Home size={28} />
-    </motion.div>
-    <span style={{ fontSize: '0.65rem', fontWeight: 800 }}>HOME</span>
-</div>
-                </Link>
+    <button 
+        onClick={() => setMobileMenuOpen(true)}
+        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', color: mobileMenuOpen ? 'var(--primary)' : 'var(--text-secondary)' }}
+    >
+        <Menu size={24} />
+        <span style={{ fontSize: '0.65rem', fontWeight: 800 }}>MENU</span>
+    </button>
 
-                <div style={{ position: 'relative' }}>
-                    <button 
-                        onClick={() => setShowUserMenu(!showUserMenu)}
-                        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', color: showUserMenu ? 'var(--primary)' : 'var(--text-secondary)' }}
-                    >
-                        {user?.profilePic ? (
-                            <img src={user.profilePic} alt="" style={{ width: 24, height: 24, borderRadius: '50%', objectFit: 'cover' }} />
-                        ) : (
-                            <UserCircle size={24} />
-                        )}
-                        <span style={{ fontSize: '0.65rem', fontWeight: 800 }}>{user ? 'PROFILE' : 'ACCOUNT'}</span>
-                        {(totalItems > 0 || wishlistCount > 0) && (
-                            <div style={{ position: 'absolute', top: 0, right: 0, width: '10px', height: '10px', borderRadius: '50%', background: 'var(--primary)', border: '2px solid var(--surface)' }} />
-                        )}
-                    </button>
-                    
-                    {/* Re-using the same Dropdown for Mobile Bottom Nav */}
-                    <AnimatePresence>
-                        {showUserMenu && (
-                            <motion.div 
-                                initial={{ opacity: 0, y: -20, scale: 0.95 }}
-                                animate={{ opacity: 1, y: -10, scale: 1 }}
-                                exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                                style={{ position: 'absolute', right: '-1rem', bottom: 'calc(100% + 20px)', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '24px', boxShadow: '0 -10px 40px rgba(0,0,0,0.2)', width: '280px', overflow: 'hidden', zIndex: 1002 }}
+    <Link 
+        to="/" 
+        onClick={() => setMobileMenuOpen(false)}
+        style={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            gap: '6px', 
+            color: location.pathname === '/' ? 'var(--primary)' : 'var(--text-secondary)',
+            background: location.pathname === '/' ? 'var(--primary-light)' : 'transparent',
+            padding: '8px 24px',
+            borderRadius: '20px',
+            marginTop: '-15px',
+            border: location.pathname === '/' ? '2px solid var(--primary)' : 'none',
+            boxShadow: location.pathname === '/' ? 'var(--shadow-md)' : 'none'
+        }}
+    >
+        <div style={{ 
+            color: location.pathname === '/' ? 'white' : 'inherit', 
+            padding: '8px', 
+            borderRadius: '50%' 
+        }}>
+            <motion.div whileTap={{ scale: 0.9 }}>
+                <Home size={28} />
+            </motion.div>
+            <span style={{ fontSize: '0.65rem', fontWeight: 800 }}>HOME</span>
+        </div>
+    </Link>
+
+    <div style={{ position: 'relative' }}>
+        <button 
+            onClick={() => setShowUserMenu(!showUserMenu)}
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', color: showUserMenu ? 'var(--primary)' : 'var(--text-secondary)' }}
+        >
+            {user?.profilePic ? (
+                <img src={user.profilePic} alt="" style={{ width: 24, height: 24, borderRadius: '50%', objectFit: 'cover' }} />
+            ) : (
+                <UserCircle size={24} />
+            )}
+            <span style={{ fontSize: '0.65rem', fontWeight: 800 }}>{user ? 'PROFILE' : 'ACCOUNT'}</span>
+            {(totalItems > 0 || wishlistCount > 0) && (
+                <div style={{ position: 'absolute', top: 0, right: 0, width: '10px', height: '10px', borderRadius: '50%', background: 'var(--primary)', border: '2px solid var(--surface)' }} />
+            )}
+        </button>
+        
+        {/* Re-using the same Dropdown for Mobile Bottom Nav */}
+        <AnimatePresence>
+            {showUserMenu && (
+                <motion.div 
+                    initial={{ opacity: 0, y: -20, scale: 0.95 }}
+                    animate={{ opacity: 1, y: -10, scale: 1 }}
+                    exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                    style={{ position: 'absolute', right: '-1rem', bottom: 'calc(100% + 20px)', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '24px', boxShadow: '0 -10px 40px rgba(0,0,0,0.2)', width: '280px', overflow: 'hidden', zIndex: 1002 }}
+                >
+                    <div style={{ padding: '1.25rem', background: 'var(--primary-light)', borderBottom: '1px solid var(--border)' }}>
+                        <div style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--text-primary)' }}>{user ? user.name : 'Guest User'}</div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 500 }}>{user ? user.email : 'Anime enthusiast'}</div>
+                    </div>
+                    <div style={{ padding: '1rem', maxHeight: '60vh', overflowY: 'auto' }}>
+                        {[
+                            { icon: <ShoppingCart size={20} />, label: 'My Cart', to: '/cart', count: totalItems },
+                            { icon: <Heart size={20} />, label: 'Wishlist', to: '/wishlist', count: wishlistCount },
+                            ...(user ? [
+                                { icon: <User size={20} />, label: 'Profile', to: '/profile' },
+                                { icon: <Package size={20} />, label: 'Orders', to: '/orders' }
+                            ] : [])
+                        ].map(item => (
+                            <Link key={item.to} to={item.to} onClick={() => setShowUserMenu(false)}
+                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.85rem 1rem', borderRadius: '14px', color: 'var(--text-secondary)', marginBottom: '4px' }}
+                                onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-2)'; }}
+                                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
                             >
-                                <div style={{ padding: '1.25rem', background: 'var(--primary-light)', borderBottom: '1px solid var(--border)' }}>
-                                    <div style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--text-primary)' }}>{user ? user.name : 'Guest User'}</div>
-                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 500 }}>{user ? user.email : 'Anime enthusiast'}</div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontWeight: 700, fontSize: '0.95rem' }}>
+                                    {item.icon} {item.label}
                                 </div>
-                                <div style={{ padding: '1rem', maxHeight: '60vh', overflowY: 'auto' }}>
-                                    {[
-                                        { icon: <ShoppingCart size={20} />, label: 'My Cart', to: '/cart', count: totalItems },
-                                        { icon: <Heart size={20} />, label: 'Wishlist', to: '/wishlist', count: wishlistCount },
-                                        ...(user ? [
-                                            { icon: <User size={20} />, label: 'Profile', to: '/profile' },
-                                            { icon: <Package size={20} />, label: 'Orders', to: '/orders' }
-                                        ] : [])
-                                    ].map(item => (
-                                        <Link key={item.to} to={item.to} onClick={() => setShowUserMenu(false)}
-                                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.85rem 1rem', borderRadius: '14px', color: 'var(--text-secondary)', marginBottom: '4px' }}
-                                            onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-2)'; }}
-                                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
-                                        >
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontWeight: 700, fontSize: '0.95rem' }}>
-                                                {item.icon} {item.label}
-                                            </div>
-                                            {(item.count ?? 0) > 0 && <span style={{ background: 'var(--primary)', color: 'white', fontSize: '0.75rem', fontWeight: 800, padding: '2px 10px', borderRadius: '12px' }}>{item.count}</span>}
-                                        </Link>
-                                    ))}
-                                    {user?.isAdmin && (
-                                        <Link to="/admin" onClick={() => setShowUserMenu(false)} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.85rem 1rem', color: 'var(--accent)', fontWeight: 800 }}>
-                                            <Settings size={20} /> Admin Panel
-                                        </Link>
-                                    )}
-                                    <div style={{ height: '1px', background: 'var(--border)', margin: '0.75rem 0' }} />
-                                    <button onClick={() => { toggleTheme(); setShowUserMenu(false); }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.85rem 1rem', color: 'var(--text-primary)', fontWeight: 700 }}>
-                                        {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />} Appearance: {theme === 'light' ? 'Dark' : 'Light'}
-                                    </button>
-                                    {user ? (
-                                        <button onClick={handleLogout} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.85rem 1rem', color: 'var(--error)', fontWeight: 800, marginTop: '0.5rem', borderTop: '1px solid var(--border)' }}>
-                                            <LogOut size={20} /> Logout
-                                        </button>
-                                    ) : (
-                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginTop: '0.75rem' }}>
-                                            <Link to="/login" onClick={() => setShowUserMenu(false)} className="btn btn-outline btn-sm">Sign In</Link>
-                                            <Link to="/register" onClick={() => setShowUserMenu(false)} className="btn btn-primary btn-sm">Join</Link>
-                                        </div>
-                                    )}
-                                </div>
-                            </motion.div>
+                                {(item.count ?? 0) > 0 && <span style={{ background: 'var(--primary)', color: 'white', fontSize: '0.75rem', fontWeight: 800, padding: '2px 10px', borderRadius: '12px' }}>{item.count}</span>}
+                            </Link>
+                        ))}
+                        {user?.isAdmin && (
+                            <Link to="/admin" onClick={() => setShowUserMenu(false)} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.85rem 1rem', color: 'var(--accent)', fontWeight: 800 }}>
+                                <Settings size={20} /> Admin Panel
+                            </Link>
                         )}
-                    </AnimatePresence>
-                </div>
-            </div>
+                        <div style={{ height: '1px', background: 'var(--border)', margin: '0.75rem 0' }} />
+                        
+                        {/* Theme toggle */}
+                        <button onClick={() => { toggleTheme(); setShowUserMenu(false); }} 
+                            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.85rem 1rem', color: 'var(--text-primary)', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', borderRadius: '14px' }}
+                            onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-2)')}
+                            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                        >
+                            {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />} Appearance: {theme === 'light' ? 'Dark' : 'Light'}
+                        </button>
+                        
+                        {/* Fullscreen toggle - NEW */}
+                        <button onClick={() => { toggleFullscreen(); setShowUserMenu(false); }} 
+                            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.85rem 1rem', color: 'var(--text-primary)', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', borderRadius: '14px', marginTop: '4px' }}
+                            onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-2)')}
+                            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                        >
+                            {isFullscreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />} 
+                            <span>{isFullscreen ? 'Exit Full Screen' : 'Go Full Screen'}</span>
+                        </button>
+                        
+                        {user ? (
+                            <button onClick={handleLogout} 
+                                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.85rem 1rem', color: 'var(--error)', fontWeight: 800, marginTop: '0.5rem', borderTop: '1px solid var(--border)', background: 'none', border: 'none', cursor: 'pointer', borderRadius: '14px' }}
+                                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)')}
+                                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                            >
+                                <LogOut size={20} /> Logout
+                            </button>
+                        ) : (
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginTop: '0.75rem' }}>
+                                <Link to="/login" onClick={() => setShowUserMenu(false)} className="btn btn-outline btn-sm" style={{ padding: '0.6rem', textAlign: 'center' }}>Sign In</Link>
+                                <Link to="/register" onClick={() => setShowUserMenu(false)} className="btn btn-primary btn-sm" style={{ padding: '0.6rem', textAlign: 'center' }}>Join</Link>
+                            </div>
+                        )}
+                    </div>
+                </motion.div>
+            )}
+        </AnimatePresence>
+    </div>
+</div>
         </header>
     );
 };
