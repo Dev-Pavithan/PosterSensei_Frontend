@@ -15,6 +15,7 @@ import OrderDetail from './pages/OrderDetail';
 import UserProfile from './pages/UserProfile';
 import Wishlist from './pages/Wishlist';
 import Search from './pages/Search';
+import AboutUs from './pages/AboutUs';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminProducts from './pages/AdminProducts';
 import AdminOrders from './pages/AdminOrders';
@@ -52,6 +53,7 @@ const AppContent = () => {
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/search" element={<Search />} />
+          <Route path="/about" element={<AboutUs />} />
         </Routes>
       </main>
       {!isAuthPage && <Footer />}

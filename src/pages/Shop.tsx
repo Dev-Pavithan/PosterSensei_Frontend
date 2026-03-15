@@ -78,7 +78,6 @@ const Shop = () => {
     useEffect(() => {
         axios.get('/api/products/animes')
             .then(r => setCategories(['All', ...r.data]))
-            .catch(() => setCategories(['All', 'Naruto', 'Dragon Ball Z', 'Attack on Titan', 'One Piece', 'Demon Slayer', 'My Hero Academia']));
     }, []);
 
     useEffect(() => {

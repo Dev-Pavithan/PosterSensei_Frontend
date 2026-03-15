@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Package, Users, TrendingUp, ShoppingBag, ArrowRight, Clock, Activity, BarChart3, Star, AlertCircle } from 'lucide-react';
+import { 
+    TrendingUp, ArrowRight, Clock, Activity, BarChart3, Star, Zap, Target
+} from 'lucide-react';
+import { motion } from 'framer-motion';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -24,130 +27,123 @@ const AdminDashboard = () => {
 
     useEffect(() => {
         fetchData();
-        const interval = setInterval(fetchData, 60000); // Live update every minute
+        const interval = setInterval(fetchData, 60000); 
         return () => clearInterval(interval);
     }, []);
 
     const KPI_CARDS = [
-        { icon: <TrendingUp size={24} />, label: 'Total Revenue', value: `LKR ${stats.totalRevenue.toLocaleString()}`, color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)' },
-        { icon: <Package size={24} />, label: 'Total Orders', value: stats.totalOrders, color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.1)' },
-        { icon: <Clock size={24} />, label: 'Pending', value: stats.pendingOrders, color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)' },
-        { icon: <Activity size={24} />, label: 'Delivered', value: stats.deliveredOrders, color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)' },
+        { icon: <TrendingUp size={24} />, label: 'Revenue', value: `LKR ${stats.totalRevenue.toLocaleString()}`, trend: '+12.5%', bg: 'linear-gradient(135deg, #6366f1, #a855f7)', size: 'large' },
+        { icon: <Zap size={24} />, label: 'Orders', value: stats.totalOrders, trend: '+8.2%', bg: 'linear-gradient(135deg, #10b981, #3b82f6)', size: 'small' },
+        { icon: <Clock size={24} />, label: 'Pending', value: stats.pendingOrders, trend: '-2.4%', bg: 'linear-gradient(135deg, #f59e0b, #ef4444)', size: 'small' },
+        { icon: <Activity size={24} />, label: 'Delivered', value: stats.deliveredOrders, trend: '+4.1%', bg: 'linear-gradient(135deg, #8b5cf6, #ec4899)', size: 'medium' },
     ];
 
     const maxRev = Math.max(...(stats.revenueByDay?.map((d: any) => d.revenue) || [1]));
 
     return (
         <div className="container" style={{ paddingBottom: '4rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '3rem', flexWrap: 'wrap', gap: '2rem' }}>
                 <div>
-                    <h2 style={{ fontWeight: 800, fontSize: '1.8rem', color: 'var(--text-primary)' }}>Dashboard Overview</h2>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
-                        <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--success)', display: 'inline-block' }} /> 
-                        Live Data · Last updated {refreshTime.toLocaleTimeString()}
+                    <h2 style={{ fontWeight: 900, fontSize: '2.5rem', color: 'var(--text-primary)', letterSpacing: '-1px' }}>Studio Insight</h2>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.5rem', fontWeight: 600 }}>
+                        <div style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--success)', boxShadow: '0 0 10px var(--success)' }} /> 
+                        Live Terminal · Synced {refreshTime.toLocaleTimeString()}
                     </div>
                 </div>
-                <div style={{ display: 'flex', gap: '0.75rem' }}>
-                    <Link to="/admin/products" className="btn btn-outline">Manage Products</Link>
-                    <Link to="/admin/orders" className="btn btn-primary">All Orders</Link>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                    <Link to="/admin/products" className="btn-ghost-admin" style={{ border: '1px solid var(--border)', background: 'var(--surface)', paddingInline: '1.5rem' }}>Inventory</Link>
+                    <Link to="/admin/orders" className="btn btn-primary" style={{ paddingInline: '2rem', borderRadius: '16px', fontWeight: 800 }}>Dispatch Hub</Link>
                 </div>
             </div>
 
-            {/* KPI Cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
-                {KPI_CARDS.map(({ icon, label, value, color, bg }) => (
-                    <div key={label} className="card" style={{ padding: '1.5rem', border: '1px solid var(--border)', position: 'relative', overflow: 'hidden' }}>
-                        <div style={{ position: 'absolute', top: '-10px', right: '-10px', width: '80px', height: '80px', background: color, opacity: 0.05, borderRadius: '50%' }} />
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                            <div style={{ width: 48, height: 48, borderRadius: 'var(--radius-md)', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color }}>{icon}</div>
-                            <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{label}</div>
+            <div className="bento-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gridAutoRows: 'minmax(160px, auto)', gap: '1.5rem', marginBottom: '3rem' }}>
+                {KPI_CARDS.map(({ icon, label, value, trend, bg, size }, idx) => (
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.1 }} key={label}
+                        style={{ 
+                            gridColumn: size === 'large' ? 'span 2' : size === 'medium' ? 'span 2' : 'span 1',
+                            gridRow: size === 'large' ? 'span 2' : 'span 1',
+                            background: bg, borderRadius: '32px', padding: '2rem', color: 'white', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'space-between'
+                        }}
+                    >
+                        <div style={{ position: 'absolute', top: '-10%', right: '-10%', width: '40%', height: '40%', background: 'rgba(255,255,255,0.1)', borderRadius: '50%', filter: 'blur(40px)' }} />
+                        <div style={{ position: 'relative', zIndex: 1 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                <div style={{ width: 48, height: 48, borderRadius: '16px', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(10px)' }}>{icon}</div>
+                                <span style={{ fontSize: '0.8rem', fontWeight: 900, padding: '4px 12px', background: 'rgba(255,255,255,0.2)', borderRadius: '20px', backdropFilter: 'blur(10px)' }}>{trend}</span>
+                            </div>
+                            <div style={{ marginTop: '2rem' }}>
+                                <div style={{ fontSize: '0.9rem', fontWeight: 700, opacity: 0.8, textTransform: 'uppercase', letterSpacing: '1px' }}>{label}</div>
+                                <div style={{ fontSize: size === 'large' ? '2.5rem' : '1.8rem', fontWeight: 900, marginTop: '0.5rem' }}>{loading ? '...' : value}</div>
+                            </div>
                         </div>
-                        <div style={{ fontSize: '1.75rem', fontWeight: 900, color: 'var(--text-primary)' }}>{loading ? '—' : value}</div>
-                    </div>
+                    </motion.div>
                 ))}
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
-                {/* Sales Chart */}
-                <div className="card" style={{ padding: '1.5rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-                        <h3 style={{ fontSize: '1.1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.5rem' }}><BarChart3 size={20} color="var(--primary)" /> Revenue Trend (Last 7 Days)</h3>
-                    </div>
-                    <div style={{ height: '220px', display: 'flex', alignItems: 'flex-end', gap: '12px', paddingBottom: '20px', borderBottom: '1px solid var(--border)' }}>
-                        {stats.revenueByDay?.map((day: any) => (
-                            <div key={day._id} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', height: '100%' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '2rem', marginBottom: '3rem' }}>
+                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} style={{ background: 'var(--surface)', padding: '2.5rem', borderRadius: '40px', border: '1px solid var(--border)' }}>
+                    <h3 style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '2.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <BarChart3 size={28} color="var(--primary)" /> Velocity Curve
+                    </h3>
+                    <div style={{ height: '300px', display: 'flex', alignItems: 'flex-end', gap: '20px', paddingBottom: '30px' }}>
+                        {stats.revenueByDay?.map((day: any, i: number) => (
+                            <div key={day._id} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', height: '100%' }}>
                                 <div style={{ flex: 1, width: '100%', display: 'flex', alignItems: 'flex-end' }}>
-                                    <div style={{ 
-                                        width: '100%', 
-                                        height: `${(day.revenue / maxRev) * 100}%`, 
-                                        background: 'linear-gradient(to top, var(--primary), var(--secondary))', 
-                                        borderRadius: '4px 4px 0 0',
-                                        minHeight: '4px',
-                                        transition: 'height 1s ease-out'
-                                    }} title={`LKR ${day.revenue}`} />
+                                    <motion.div initial={{ height: 0 }} animate={{ height: `${(day.revenue / (maxRev || 1)) * 100}%` }} transition={{ delay: i * 0.05 + 0.5 }}
+                                        style={{ width: '100%', background: 'linear-gradient(to top, var(--primary), var(--secondary))', borderRadius: '12px' }} />
                                 </div>
-                                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700, whiteSpace: 'nowrap', transform: 'rotate(-45deg)', marginTop: '5px' }}>
-                                    {new Date(day._id).toLocaleDateString('en-US', { weekday: 'short' })}
-                                </div>
+                                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 800 }}>{new Date(day._id).toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase()}</div>
                             </div>
                         ))}
                     </div>
-                </div>
-
-                {/* Top Selling Products */}
-                <div className="card" style={{ padding: '1.5rem' }}>
-                    <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Star size={20} color="var(--accent)" /> Best Sellers</h3>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        {stats.topProducts?.map((p: any) => (
-                            <div key={p._id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.75rem', background: 'var(--surface-2)', borderRadius: 'var(--radius-md)' }}>
-                                <img src={p.image} alt="" style={{ width: 44, height: 44, borderRadius: '6px', objectFit: 'cover' }} />
+                </motion.div>
+                <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} style={{ background: 'var(--surface)', padding: '2.5rem', borderRadius: '40px', border: '1px solid var(--border)' }}>
+                    <h3 style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '2.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <Star size={28} color="#f59e0b" /> Hall of Fame
+                    </h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                        {stats.topProducts?.slice(0, 4).map((p: any, i: number) => (
+                            <div key={p._id} style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+                                <img src={p.image} alt="" style={{ width: 64, height: 64, borderRadius: '16px', objectFit: 'cover' }} />
                                 <div style={{ flex: 1 }}>
-                                    <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-primary)' }}>{p.title}</div>
-                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{p.totalQty} units sold</div>
+                                    <div style={{ fontWeight: 800, fontSize: '1rem' }}>{p.title}</div>
+                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 700 }}>{p.totalQty} Sales</div>
                                 </div>
-                                <div style={{ fontWeight: 800, color: 'var(--primary)', fontSize: '0.9rem' }}>LKR {p.totalRevenue.toLocaleString()}</div>
+                                <div style={{ fontWeight: 900, color: 'var(--primary)' }}>LKR {p.totalRevenue.toLocaleString()}</div>
                             </div>
                         ))}
                     </div>
-                </div>
+                </motion.div>
             </div>
 
-            {/* Recent Orders Section */}
-            <div className="card">
-                <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <h3 style={{ fontWeight: 800, fontSize: '1.1rem' }}>Recent Order Activity</h3>
-                    <Link to="/admin/orders" style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>View All <ArrowRight size={14} /></Link>
+            <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} style={{ background: 'var(--surface)', borderRadius: '40px', border: '1px solid var(--border)', overflow: 'hidden' }}>
+                <div style={{ padding: '2.5rem', borderBottom: '1px solid var(--border)' }}>
+                    <h3 style={{ fontWeight: 900, fontSize: '1.5rem' }}>Live Transmission</h3>
                 </div>
                 <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
-                            <tr style={{ textAlign: 'left', background: 'var(--surface-2)', color: 'var(--text-muted)' }}>
-                                <th style={{ padding: '1rem 1.5rem', fontWeight: 700 }}>Order</th>
-                                <th style={{ padding: '1rem 1.5rem', fontWeight: 700 }}>Customer</th>
-                                <th style={{ padding: '1rem 1.5rem', fontWeight: 700 }}>Amount</th>
-                                <th style={{ padding: '1rem 1.5rem', fontWeight: 700 }}>Status</th>
-                                <th style={{ padding: '1rem 1.5rem', fontWeight: 700 }}>Date</th>
+                            <tr style={{ background: 'var(--surface-2)' }}>
+                                {['Code', 'Agent', 'Volume', 'Status', 'Timestamp'].map(h => (
+                                    <th key={h} style={{ padding: '1.25rem 2.5rem', textAlign: 'left', fontWeight: 800, fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>{h}</th>
+                                ))}
                             </tr>
                         </thead>
                         <tbody>
                             {recentOrders.map((o) => (
                                 <tr key={o._id} style={{ borderBottom: '1px solid var(--border)' }}>
-                                    <td style={{ padding: '1rem 1.5rem', fontWeight: 700, color: 'var(--primary)' }}>#{o._id?.slice(-8).toUpperCase()}</td>
-                                    <td style={{ padding: '1rem 1.5rem' }}>
-                                        <div style={{ fontWeight: 600 }}>{o.user?.name}</div>
-                                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{o.user?.email}</div>
-                                    </td>
-                                    <td style={{ padding: '1rem 1.5rem', fontWeight: 750 }}>LKR {o.totalPrice.toLocaleString()}</td>
-                                    <td style={{ padding: '1rem 1.5rem' }}>
-                                        <span className={`badge status-${o.status}`} style={{ background: 'var(--surface-2)', borderRadius: '6px' }}>{o.status}</span>
-                                    </td>
-                                    <td style={{ padding: '1rem 1.5rem', color: 'var(--text-muted)' }}>{new Date(o.createdAt).toLocaleDateString()}</td>
+                                    <td style={{ padding: '1.5rem 2.5rem', fontWeight: 900, color: 'var(--primary)', fontFamily: 'monospace' }}>{o._id?.slice(-8).toUpperCase()}</td>
+                                    <td style={{ padding: '1.5rem 2.5rem' }}>{o.user?.name}</td>
+                                    <td style={{ padding: '1.5rem 2.5rem', fontWeight: 900 }}>LKR {o.totalPrice.toLocaleString()}</td>
+                                    <td style={{ padding: '1.5rem 2.5rem' }}>{o.status}</td>
+                                    <td style={{ padding: '1.5rem 2.5rem', color: 'var(--text-muted)' }}>{new Date(o.createdAt).toLocaleTimeString()}</td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
-            </div>
+            </motion.div>
         </div>
     );
 };

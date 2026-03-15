@@ -1,133 +1,43 @@
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Phone, Save, Lock, Eye, EyeOff, MapPin, Trash2, Plus, ShoppingBag, Heart, Shield } from 'lucide-react';
+import {
+    User, Mail, Phone, Save, Lock, Eye, EyeOff, MapPin,
+    Trash2, Plus, ShoppingBag, Heart, Shield, ChevronRight,
+    Camera, Settings, LogOut, Bell, Sparkles
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
 
-/* ─── Injected responsive styles ─── */
-const injectStyles = () => {
-    if (document.getElementById('profile-page-styles')) return;
-    const s = document.createElement('style');
-    s.id = 'profile-page-styles';
-    s.innerHTML = `
-        .profile-layout {
-            display: grid;
-            grid-template-columns: 260px 1fr;
-            gap: 1.5rem;
-            align-items: start;
-        }
-        .profile-sidebar { display: block; }
-        .profile-tabs-mobile { display: none; }
-        .profile-avatar-ring {
-            width: 80px; height: 80px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            display: flex; align-items: center; justify-content: center;
-            font-size: 2rem; font-weight: 800; color: white;
-            flex-shrink: 0;
-            box-shadow: 0 4px 20px rgba(var(--primary-rgb, 99,102,241), 0.4);
-        }
-        .profile-nav-btn {
-            display: flex; align-items: center; gap: 0.75rem;
-            padding: 0.75rem 1rem;
-            border-radius: var(--radius-md);
-            background: transparent;
-            color: var(--text-secondary);
-            font-weight: 500;
-            border: none;
-            text-align: left;
-            transition: all 0.2s;
-            width: 100%;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-        .profile-nav-btn:hover {
-            background: var(--surface-2);
-            color: var(--text-primary);
-        }
-        .profile-nav-btn.active {
-            background: var(--primary-light);
-            color: var(--primary);
-            font-weight: 700;
-        }
-        .profile-nav-btn .nav-icon {
-            width: 34px; height: 34px;
-            border-radius: var(--radius-sm);
-            background: var(--surface-2);
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0;
-            transition: all 0.2s;
-        }
-        .profile-nav-btn.active .nav-icon {
-            background: var(--primary);
-            color: white;
-        }
-        .profile-field-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-        .profile-addr-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.75rem;
-        }
-        .profile-stat-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
-        }
-        @media (max-width: 768px) {
-            .profile-layout {
-                grid-template-columns: 1fr;
-            }
-            .profile-sidebar { display: none; }
-            .profile-tabs-mobile { display: flex; }
-            .profile-field-grid { grid-template-columns: 1fr; }
-            .profile-addr-grid { grid-template-columns: 1fr; }
-            .profile-stat-grid { grid-template-columns: repeat(3, 1fr); }
-        }
-        @media (max-width: 480px) {
-            .profile-stat-grid { grid-template-columns: 1fr; }
-        }
-    `;
-    document.head.appendChild(s);
-};
-
-const TABS = [
-    { id: 'profile',   label: 'Profile',    icon: <User size={16} /> },
-    { id: 'addresses', label: 'Addresses',  icon: <MapPin size={16} /> },
-    { id: 'security',  label: 'Security',   icon: <Shield size={16} /> },
-];
-
 const UserProfile = () => {
-    const { user, updateUser } = useAuth();
+    const { user, updateUser, logout } = useAuth();
     const [tab, setTab] = useState<'profile' | 'security' | 'addresses'>('profile');
 
     // Profile state
-    const [name, setName]   = useState(user?.name  || '');
+    const [name, setName] = useState(user?.name || '');
     const [email, setEmail] = useState(user?.email || '');
     const [phone, setPhone] = useState(user?.phone || '');
 
     // Security state
-    const [password, setPassword]   = useState('');
-    const [showPass, setShowPass]   = useState(false);
+    const [password, setPassword] = useState('');
+    const [showPass, setShowPass] = useState(false);
 
     // Address state
     const [addresses, setAddresses] = useState(user?.addresses || []);
-    const [newAddr, setNewAddr]     = useState({ address: '', city: '', postalCode: '', country: 'Srilanka' });
+    const [newAddr, setNewAddr] = useState({ address: '', city: '', postalCode: '', country: 'Srilanka' });
 
-    const [saving, setSaving]   = useState(false);
+    const [saving, setSaving] = useState(false);
     const [success, setSuccess] = useState('');
-    const [error,   setError]   = useState('');
-
-    useEffect(() => { injectStyles(); }, []);
+    const [error, setError] = useState('');
 
     if (!user) return (
-        <div className="container" style={{ padding: '6rem 0', textAlign: 'center' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔐</div>
-            <h2 style={{ marginBottom: '1rem', color: 'var(--text-primary)' }}>Please log in</h2>
-            <Link to="/login" className="btn btn-primary">Go to Login</Link>
+        <div className="container" style={{ padding: '10vh 0', textAlign: 'center' }}>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+                <div style={{ fontSize: '4rem', marginBottom: '2rem' }}>🔒</div>
+                <h2 style={{ fontSize: '2rem', fontWeight: 900, marginBottom: '1rem' }}>Access Restricted</h2>
+                <p style={{ color: 'var(--text-secondary)', marginBottom: '3rem' }}>Please authenticate to access your studio profile.</p>
+                <Link to="/login" className="btn btn-primary btn-lg rounded-pill px-5">Go to Login</Link>
+            </motion.div>
         </div>
     );
 
@@ -138,7 +48,7 @@ const UserProfile = () => {
         try {
             const { data } = await axios.put('/api/users/profile', { name, email, phone, ...(password ? { password } : {}) });
             updateUser(data);
-            setSuccess('Profile updated successfully!');
+            setSuccess('Studio profile updated!');
             setPassword('');
         } catch (err: any) { setError(err.response?.data?.message || 'Update failed.'); }
         finally { setSaving(false); }
@@ -152,7 +62,7 @@ const UserProfile = () => {
             updateUser(data);
             setAddresses(data.addresses);
             setNewAddr({ address: '', city: '', postalCode: '', country: 'Srilanka' });
-            setSuccess('Address added!');
+            setSuccess('Address added to vault.');
         } catch (err: any) { setError('Failed to add address'); }
         finally { setSaving(false); }
     };
@@ -164,312 +74,365 @@ const UserProfile = () => {
             const { data } = await axios.put('/api/users/profile', { addresses: updated });
             updateUser(data);
             setAddresses(data.addresses);
-            setSuccess('Address removed!');
+            setSuccess('Address removed.');
         } catch { setError('Failed to remove address'); }
     };
 
     const initials = name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
 
-    /* ─── Alert banner ─── */
-    const Alert = () => (error || success) ? (
-        <div style={{
-            marginTop: '1.25rem',
-            padding: '0.85rem 1rem',
-            borderRadius: 'var(--radius-md)',
-            background: error ? 'rgba(239,68,68,0.1)' : 'rgba(34,197,94,0.1)',
-            border: `1px solid ${error ? 'rgba(239,68,68,0.3)' : 'rgba(34,197,94,0.3)'}`,
-            color: error ? 'var(--error)' : '#16a34a',
-            fontSize: '0.875rem',
-            fontWeight: 600,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem'
-        }}>
-            {error ? '⚠️' : '✅'} {error || success}
-        </div>
-    ) : null;
+    const TABS = [
+        { id: 'profile', label: 'Identity', icon: <User size={18} /> },
+        { id: 'addresses', label: 'Vault', icon: <MapPin size={18} /> },
+        { id: 'security', label: 'Defense', icon: <Shield size={18} /> },
+    ];
 
     return (
-        <div className="container" >
-
-            {/* ── Hero profile card ── */}
-            <div className="card" style={{
-                marginBottom: '1rem',
-                overflow: 'hidden',
-                border: '1px solid var(--border)',
-            }}>
-                {/* Gradient banner */}
+        <div style={{ background: 'var(--surface)', paddingBottom: '10vh' }}>
+            {/* PROFILE HEADER: Mesh Gradient */}
+            <section style={{ position: 'relative', height: '350px', overflow: 'hidden', marginBottom: '-100px' }}>
                 <div style={{
-                    height: '90px',
-                    position: 'relative',
+                    position: 'absolute',
+                    inset: 0,
+                    background: 'radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%)',
+                    zIndex: 0
                 }} />
-                {/* Avatar + info row */}
-                <div style={{ padding: '0 1.5rem 1.5rem', display: 'flex', alignItems: 'flex-end', gap: '1rem', flexWrap: 'wrap', marginTop: '-40px' }}>
-                    <div className="profile-avatar-ring" style={{ width: 80, height: 80, fontSize: '1.75rem', border: '3px solid var(--surface)' }}>
-                        {user.profilePic
-                            ? <img src={user.profilePic} alt={user.name} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
-                            : initials || <User size={32} />
-                        }
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0, paddingBottom: '0.25rem' }}>
-                        <div style={{ fontWeight: 800, fontSize: '1.25rem', color: 'var(--text-primary)', lineHeight: 1.2 }}>{user.name}</div>
-                        <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{user.email}</div>
-                        {user.isAdmin && (
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.35rem', fontSize: '0.72rem', fontWeight: 700, color: 'var(--primary)', background: 'var(--primary-light)', padding: '0.2rem 0.6rem', borderRadius: '999px' }}>
-                                ✦ Admin
-                            </span>
-                        )}
-                    </div>
-                    
-                </div>
-            </div>
+                <div style={{ position: 'absolute', inset: 0, opacity: 0.1, backgroundImage: 'url("https://www.transparenttextures.com/patterns/carbon-fibre.png")' }} />
 
-            {/* ── Mobile tab pills ── */}
-            <div className="profile-tabs-mobile" style={{
-                gap: '0.5rem',
-                marginBottom: '1rem',
-                overflowX: 'auto',
-                paddingBottom: '0.25rem',
-                scrollbarWidth: 'none',
-            }}>
-                {TABS.map(t => (
-                    <button key={t.id} onClick={() => handleSwitchTab(t.id)} style={{
-                        display: 'flex', alignItems: 'center', gap: '0.5rem',
-                        padding: '0.6rem 1.1rem',
-                        borderRadius: '999px',
-                        border: tab === t.id ? '2px solid var(--primary)' : '2px solid var(--border)',
-                        background: tab === t.id ? 'var(--primary-light)' : 'var(--surface)',
-                        color: tab === t.id ? 'var(--primary)' : 'var(--text-secondary)',
-                        fontWeight: tab === t.id ? 700 : 500,
-                        fontSize: '0.85rem',
-                        cursor: 'pointer',
-                        whiteSpace: 'nowrap',
-                        flexShrink: 0,
-                        transition: 'all 0.2s',
-                    }}>
-                        {t.icon} {t.label}
-                    </button>
-                ))}
-            </div>
-
-            {/* ── Main layout ── */}
-            <div className="profile-layout">
-
-                {/* ── Desktop Sidebar ── */}
-                <div className="profile-sidebar">
-                    <div className="card" style={{ padding: '0.75rem', border: '1px solid var(--border)' }}>
-                        <div style={{ padding: '0.5rem 1rem 0.75rem', fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                            Settings
+                <div className="container" style={{ position: 'relative', zIndex: 1, paddingTop: '4rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', flexWrap: 'wrap' }}>
+                        <div style={{ position: 'relative' }}>
+                            <div style={{
+                                width: '120px',
+                                height: '120px',
+                                borderRadius: '40px',
+                                background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '3rem',
+                                fontWeight: 900,
+                                color: 'white',
+                                boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+                                border: '4px solid var(--surface)'
+                            }}>
+                                {user.profilePic ? <img src={user.profilePic} style={{ width: '100%', height: '100%', borderRadius: '36px', objectFit: 'cover' }} /> : initials}
+                            </div>
+                            <button style={{ position: 'absolute', bottom: '-5px', right: '-5px', background: 'var(--primary)', color: 'white', border: '3px solid var(--surface)', borderRadius: '15px', padding: '0.5rem' }}>
+                                <Camera size={16} />
+                            </button>
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                            {TABS.map(t => (
-                                <button key={t.id} onClick={() => handleSwitchTab(t.id)} className={`profile-nav-btn${tab === t.id ? ' active' : ''}`}>
-                                    <span className="nav-icon">{t.icon}</span>
-                                    {t.label}
-                                </button>
-                            ))}
-                        </div>
-
-                        <div style={{ margin: '1rem 0', borderTop: '1px solid var(--border)' }} />
-
-                        <div style={{ padding: '0.5rem 1rem 0.75rem', fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                            Quick Links
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                            {[
-                                { to: '/orders',  icon: <ShoppingBag size={16} />, label: 'My Orders' },
-                                { to: '/wishlist',icon: <Heart size={16} />,       label: 'Wishlist' },
-                            ].map(ln => (
-                                <Link key={ln.to} to={ln.to} className="profile-nav-btn" style={{ textDecoration: 'none' }}>
-                                    <span className="nav-icon">{ln.icon}</span>
-                                    {ln.label}
-                                </Link>
-                            ))}
+                        <div style={{ color: 'white' }}>
+                            <h1 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '0.5rem' }}>{user.name}</h1>
+                            <div style={{ display: 'flex', gap: '1.5rem', opacity: 0.7, fontSize: '0.9rem', fontWeight: 700 }}>
+                                <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Mail size={16} /> {user.email}</span>
+                                {user.isAdmin && <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--primary-light)' }}><Sparkles size={16} /> STUDIO ADMIN</span>}
+                            </div>
                         </div>
                     </div>
                 </div>
+            </section>
 
-                {/* ── Content Panel ── */}
-                <div className="card" style={{ padding: '1.75rem', border: '1px solid var(--border)', minWidth: 0 }}>
+            <div className="container" style={{ position: 'relative', zIndex: 10 }}>
+                <div className="studio-dashboard-grid">
 
-                    {/* ─ Profile Info ─ */}
-                    {tab === 'profile' && (
-                        <form onSubmit={handleProfileUpdate} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                            <div>
-                                <h2 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)' }}>Personal Information</h2>
-                                <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>Update your name, email and phone number.</p>
-                            </div>
-                            <div className="profile-field-grid">
-                                <div className="input-group">
-                                    <label className="input-label">Full Name</label>
-                                    <div className="input-icon-wrap">
-                                        <User size={15} className="input-icon" />
-                                        <input className="input" value={name} onChange={e => setName(e.target.value)} placeholder="Your full name" required />
-                                    </div>
-                                </div>
-                                <div className="input-group">
-                                    <label className="input-label">Email Address</label>
-                                    <div className="input-icon-wrap">
-                                        <Mail size={15} className="input-icon" />
-                                        <input type="email" className="input" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" required />
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="input-group" style={{ maxWidth: '340px' }}>
-                                <label className="input-label">Phone Number</label>
-                                <div className="input-icon-wrap">
-                                    <Phone size={15} className="input-icon" />
-                                    <input type="tel" className="input" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+94 77 123 4567" />
-                                </div>
-                            </div>
-                            <div>
-                                <button type="submit" disabled={saving} className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
-                                    <Save size={16} /> {saving ? 'Saving...' : 'Save Changes'}
-                                </button>
-                            </div>
-                            <Alert />
-                        </form>
-                    )}
-
-                    {/* ─ Addresses ─ */}
-                    {tab === 'addresses' && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                            <div>
-                                <h2 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)' }}>Saved Addresses</h2>
-                                <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>Manage your delivery addresses.</p>
-                            </div>
-
-                            {addresses.length === 0 ? (
-                                <div style={{ textAlign: 'center', padding: '2.5rem 1rem', background: 'var(--surface-2)', borderRadius: 'var(--radius-lg)', border: '1px dashed var(--border)' }}>
-                                    <MapPin size={36} style={{ color: 'var(--text-muted)', marginBottom: '0.75rem' }} />
-                                    <div style={{ fontWeight: 600, color: 'var(--text-muted)', fontSize: '0.9rem' }}>No addresses saved yet</div>
-                                </div>
-                            ) : (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                                    {addresses.map((a: any) => (
-                                        <div key={a._id} style={{
-                                            padding: '1rem 1.25rem',
-                                            borderRadius: 'var(--radius-md)',
-                                            border: '1px solid var(--border)',
-                                            background: 'var(--surface-2)',
+                    {/* SIDEBAR: Studio Navigation */}
+                    <aside>
+                        <motion.div
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            style={{
+                                background: 'rgba(255,255,255,0.03)',
+                                backdropFilter: 'blur(20px)',
+                                borderRadius: '32px',
+                                padding: '1.5rem',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                position: 'sticky',
+                                top: '100px'
+                            }}
+                        >
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                {TABS.map(t => (
+                                    <button
+                                        key={t.id}
+                                        onClick={() => handleSwitchTab(t.id)}
+                                        style={{
                                             display: 'flex',
-                                            justifyContent: 'space-between',
                                             alignItems: 'center',
-                                            gap: '1rem',
-                                        }}>
-                                            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', minWidth: 0 }}>
-                                                <div style={{ width: 34, height: 34, borderRadius: 'var(--radius-sm)', background: 'var(--primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: 'var(--primary)' }}>
-                                                    <MapPin size={16} />
+                                            justifyContent: 'space-between',
+                                            padding: '1rem 1.25rem',
+                                            borderRadius: '20px',
+                                            border: 'none',
+                                            background: tab === t.id ? 'var(--primary)' : 'transparent',
+                                            color: tab === t.id ? 'white' : 'var(--text-secondary)',
+                                            fontWeight: 700,
+                                            cursor: 'pointer',
+                                            transition: 'all 0.3s'
+                                        }}
+                                    >
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>{t.icon} {t.label}</div>
+                                        {tab === t.id && <ChevronRight size={16} />}
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', marginBlock: '1.5rem' }} />
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                <Link to="/orders" style={{ textDecoration: 'none', color: 'inherit' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem 1.25rem', borderRadius: '20px', fontWeight: 700, opacity: 0.7 }}>
+                                        <ShoppingBag size={18} /> My Projects
+                                    </div>
+                                </Link>
+                                <Link to="/wishlist" style={{ textDecoration: 'none', color: 'inherit' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem 1.25rem', borderRadius: '20px', fontWeight: 700, opacity: 0.7 }}>
+                                        <Heart size={18} /> Curated List
+                                    </div>
+                                </Link>
+                            </div>
+
+                            <button onClick={logout} style={{ width: '100%', marginTop: '2rem', display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem 1.25rem', borderRadius: '20px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: 'none', fontWeight: 800, cursor: 'pointer' }}>
+                                <LogOut size={18} /> Terminate Session
+                            </button>
+                        </motion.div>
+                    </aside>
+
+                    {/* CONTENT BENTO */}
+                    <main>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '1.5rem' }}>
+                            {/* Quick Stats Bento */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="bento-stats-span-4"
+                                style={{
+                                    gridColumn: 'span 4',
+                                    background: 'var(--primary)',
+                                    padding: '2rem',
+                                    borderRadius: '32px',
+                                    color: 'white',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    justifyContent: 'space-between',
+                                    height: '220px'
+                                }}
+                            >
+                                <ShoppingBag size={32} />
+                                <div>
+                                    <div style={{ fontSize: '3rem', fontWeight: 900 }}>{addresses.length}</div>
+                                    <div style={{ fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', opacity: 0.8 }}>Active Addresses</div>
+                                </div>
+                            </motion.div>
+
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.1 }}
+                                className="bento-stats-span-8"
+                                style={{
+                                    gridColumn: 'span 8',
+                                    background: 'var(--surface-2)',
+                                    border: '1px solid var(--border)',
+                                    padding: '2rem',
+                                    borderRadius: '32px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '2rem',
+                                    height: '220px'
+                                }}
+                            >
+                                <div style={{ textAlign: 'center' }}>
+                                    <Bell size={24} style={{ marginBottom: '0.5rem', opacity: 0.5 }} />
+                                    <div style={{ fontWeight: 800 }}>Account Health</div>
+                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Full access enabled</div>
+                                </div>
+                                <div style={{ width: '1px', height: '60px', background: 'var(--border)' }} />
+                                <div style={{ textAlign: 'center' }}>
+                                    <Settings size={24} style={{ marginBottom: '0.5rem', opacity: 0.5 }} />
+                                    <div style={{ fontWeight: 800 }}>Studio Tier</div>
+                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Premium Creative</div>
+                                </div>
+                            </motion.div>
+
+                            {/* Main Form Panel */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.2 }}
+                                style={{
+                                    gridColumn: 'span 12',
+                                    background: 'rgba(255,255,255,0.02)',
+                                    backdropFilter: 'blur(10px)',
+                                    border: '1px solid rgba(255,255,255,0.05)',
+                                    borderRadius: '32px',
+                                    padding: '3.5rem'
+                                }}
+                            >
+                                <AnimatePresence mode="wait">
+                                    {tab === 'profile' && (
+                                        <motion.form
+                                            key="profile"
+                                            initial={{ opacity: 0, x: 20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            exit={{ opacity: 0, x: -20 }}
+                                            onSubmit={handleProfileUpdate}
+                                        >
+                                            <h2 style={{ fontSize: '2rem', fontWeight: 900, marginBottom: '2.5rem' }}>Personal Identity</h2>
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '2rem' }}>
+                                                <div className="input-group">
+                                                    <label style={{ fontSize: '0.75rem', fontWeight: 800, opacity: 0.6, marginBottom: '0.75rem', display: 'block' }}>FULL NAME</label>
+                                                    <input className="input studio-input" value={name} onChange={e => setName(e.target.value)} style={studioInputStyle} />
                                                 </div>
-                                                <div style={{ minWidth: 0 }}>
-                                                    <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.address}</div>
-                                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>{a.city}, {a.postalCode}, {a.country}</div>
+                                                <div className="input-group">
+                                                    <label style={{ fontSize: '0.75rem', fontWeight: 800, opacity: 0.6, marginBottom: '0.75rem', display: 'block' }}>EMAIL ADDRESS</label>
+                                                    <input className="input studio-input" value={email} onChange={e => setEmail(e.target.value)} style={studioInputStyle} />
                                                 </div>
                                             </div>
-                                            <button onClick={() => deleteAddress(a._id)} title="Delete address" style={{
-                                                flexShrink: 0, padding: '0.45rem', borderRadius: 'var(--radius-sm)',
-                                                color: 'var(--error)', background: 'rgba(239,68,68,0.08)',
-                                                border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center',
-                                                transition: 'background 0.2s',
-                                            }}
-                                                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.18)')}
-                                                onMouseLeave={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.08)')}
-                                            >
-                                                <Trash2 size={16} />
+                                            <div style={{ maxWidth: '400px', marginBottom: '3rem' }}>
+                                                <label style={{ fontSize: '0.75rem', fontWeight: 800, opacity: 0.6, marginBottom: '0.75rem', display: 'block' }}>CONTACT PHONE</label>
+                                                <input className="input studio-input" value={phone} onChange={e => setPhone(e.target.value)} style={studioInputStyle} />
+                                            </div>
+                                            <button type="submit" disabled={saving} className="btn btn-primary btn-lg rounded-pill" style={{ paddingInline: '3rem' }}>
+                                                {saving ? 'Syncing...' : 'Update Identity'}
                                             </button>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
+                                        </motion.form>
+                                    )}
 
-                            {/* Add new address form */}
-                            <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1.25rem' }}>
-                                <h3 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '1rem', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                    <Plus size={16} /> Add New Address
-                                </h3>
-                                <form onSubmit={handleAddAddress} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-                                    <input className="input" placeholder="Street Address" value={newAddr.address} onChange={e => setNewAddr({ ...newAddr, address: e.target.value })} required />
-                                    <div className="profile-addr-grid">
-                                        <input className="input" placeholder="City" value={newAddr.city} onChange={e => setNewAddr({ ...newAddr, city: e.target.value })} required />
-                                        <input className="input" placeholder="Postal Code" value={newAddr.postalCode} onChange={e => setNewAddr({ ...newAddr, postalCode: e.target.value })} required />
-                                    </div>
-                                    <div>
-                                        <button type="submit" disabled={saving} className="btn btn-outline" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
-                                            <Plus size={16} /> {saving ? 'Adding...' : 'Add Address'}
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                            <Alert />
+                                    {tab === 'addresses' && (
+                                        <motion.div
+                                            key="addresses"
+                                            initial={{ opacity: 0, x: 20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            exit={{ opacity: 0, x: -20 }}
+                                        >
+                                            <h2 style={{ fontSize: '2rem', fontWeight: 900, marginBottom: '2.5rem' }}>Shipping Vault</h2>
+                                            <div style={{ display: 'grid', gap: '1rem', marginBottom: '3rem' }}>
+                                                {addresses.map((a: any) => (
+                                                    <div key={a._id} style={{
+                                                        background: 'var(--surface-2)',
+                                                        padding: '1.5rem 2rem',
+                                                        borderRadius: '24px',
+                                                        border: '1px solid var(--border)',
+                                                        display: 'flex',
+                                                        justifyContent: 'space-between',
+                                                        alignItems: 'center'
+                                                    }}>
+                                                        <div>
+                                                            <div style={{ fontWeight: 800 }}>{a.address}</div>
+                                                            <div style={{ fontSize: '0.85rem', opacity: 0.6 }}>{a.city}, {a.postalCode}</div>
+                                                        </div>
+                                                        <button onClick={() => deleteAddress(a._id)} style={{ color: '#ef4444', background: 'transparent', border: 'none', cursor: 'pointer' }}><Trash2 size={20} /></button>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            <div style={{ background: 'rgba(255,255,255,0.03)', padding: '2.5rem', borderRadius: '24px', border: '1px dashed var(--border)' }}>
+                                                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '1.5rem' }}>Add New Location</h3>
+                                                <form onSubmit={handleAddAddress} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                                                    <input className="input studio-input" style={{ ...studioInputStyle, gridColumn: 'span 2' }} placeholder="Street Address" value={newAddr.address} onChange={e => setNewAddr({ ...newAddr, address: e.target.value })} required />
+                                                    <input className="input studio-input" style={studioInputStyle} placeholder="City" value={newAddr.city} onChange={e => setNewAddr({ ...newAddr, city: e.target.value })} required />
+                                                    <input className="input studio-input" style={studioInputStyle} placeholder="Postal Code" value={newAddr.postalCode} onChange={e => setNewAddr({ ...newAddr, postalCode: e.target.value })} required />
+                                                    <button type="submit" disabled={saving} className="btn btn-primary rounded-pill" style={{ gridColumn: 'span 2' }}>Initialize Location</button>
+                                                </form>
+                                            </div>
+                                        </motion.div>
+                                    )}
+
+                                    {tab === 'security' && (
+                                        <motion.form
+                                            key="security"
+                                            initial={{ opacity: 0, x: 20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            exit={{ opacity: 0, x: -20 }}
+                                            onSubmit={handleProfileUpdate}
+                                        >
+                                            <h2 style={{ fontSize: '2rem', fontWeight: 900, marginBottom: '2.5rem' }}>Cyber Defense</h2>
+                                            <div style={{ maxWidth: '450px' }}>
+                                                <div className="input-group" style={{ marginBottom: '2rem' }}>
+                                                    <label style={{ fontSize: '0.75rem', fontWeight: 800, opacity: 0.6, marginBottom: '0.75rem', display: 'block' }}>NEW PASSWORD</label>
+                                                    <div style={{ position: 'relative' }}>
+                                                        <input
+                                                            type={showPass ? 'text' : 'password'}
+                                                            className="input studio-input"
+                                                            style={studioInputStyle}
+                                                            value={password}
+                                                            onChange={e => setPassword(e.target.value)}
+                                                        />
+                                                        <button type="button" onClick={() => setShowPass(!showPass)} style={{ position: 'absolute', right: '1.5rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)' }}>
+                                                            {showPass ? <EyeOff size={20} /> : <Eye size={20} />}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <button type="submit" disabled={saving || !password} className="btn btn-primary btn-lg rounded-pill" style={{ paddingInline: '3rem' }}>
+                                                    {saving ? 'Securing...' : 'Establish Security'}
+                                                </button>
+                                            </div>
+                                        </motion.form>
+                                    )}
+                                </AnimatePresence>
+
+                                {(success || error) && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        style={{
+                                            marginTop: '2rem',
+                                            padding: '1rem 1.5rem',
+                                            borderRadius: '16px',
+                                            background: success ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
+                                            color: success ? '#4ade80' : '#f87171',
+                                            fontWeight: 700,
+                                            border: `1px solid ${success ? '#4ade80' : '#f87171'}`
+                                        }}
+                                    >
+                                        {success || error}
+                                    </motion.div>
+                                )}
+                            </motion.div>
                         </div>
-                    )}
-
-                    {/* ─ Security ─ */}
-                    {tab === 'security' && (
-                        <form onSubmit={handleProfileUpdate} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                            <div>
-                                <h2 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)' }}>Security Settings</h2>
-                                <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>Change your account password.</p>
-                            </div>
-
-                            {/* Info banner */}
-                            <div style={{ padding: '0.85rem 1rem', background: 'var(--surface-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
-                                <Shield size={16} style={{ color: 'var(--primary)', flexShrink: 0, marginTop: '0.1rem' }} />
-                                Use a strong password with at least 8 characters, including numbers and symbols.
-                            </div>
-
-                            <div className="input-group" style={{ maxWidth: '400px' }}>
-                                <label className="input-label">New Password</label>
-                                <div className="input-icon-wrap" style={{ position: 'relative' }}>
-                                    <Lock size={15} className="input-icon" />
-                                    <input
-                                        type={showPass ? 'text' : 'password'}
-                                        className="input"
-                                        placeholder="Enter new password"
-                                        value={password}
-                                        onChange={e => setPassword(e.target.value)}
-                                    />
-                                    <button type="button" onClick={() => setShowPass(!showPass)} style={{
-                                        position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)',
-                                        background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.25rem',
-                                    }}>
-                                        {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Strength indicator */}
-                            {password.length > 0 && (
-                                <div style={{ maxWidth: '400px' }}>
-                                    <div style={{ display: 'flex', gap: '4px', marginBottom: '0.3rem' }}>
-                                        {[1,2,3,4].map(i => (
-                                            <div key={i} style={{
-                                                flex: 1, height: '4px', borderRadius: '999px',
-                                                background: password.length >= i * 3
-                                                    ? (['var(--error)', 'orange', '#eab308', 'var(--success)'][i - 1])
-                                                    : 'var(--border)',
-                                                transition: 'background 0.3s',
-                                            }} />
-                                        ))}
-                                    </div>
-                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                                        {password.length < 3 ? 'Too short' : password.length < 6 ? 'Weak' : password.length < 9 ? 'Fair' : 'Strong'}
-                                    </div>
-                                </div>
-                            )}
-
-                            <div>
-                                <button type="submit" disabled={saving || !password} className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
-                                    <Save size={16} /> {saving ? 'Updating...' : 'Update Password'}
-                                </button>
-                            </div>
-                            <Alert />
-                        </form>
-                    )}
+                    </main>
                 </div>
             </div>
+
+            <style>{`
+                .studio-dashboard-grid {
+                    display: grid;
+                    grid-template-columns: 320px 1fr;
+                    gap: 2rem;
+                }
+                .studio-input {
+                    background: var(--surface-2) !important;
+                    border: 1px solid var(--border) !important;
+                    border-radius: 16px !important;
+                    padding: 1.2rem 1.5rem !important;
+                    color: var(--text-primary) !important;
+                    font-weight: 600 !important;
+                }
+                .studio-input:focus {
+                    border-color: var(--primary) !important;
+                }
+                @media (max-width: 991px) {
+                    .studio-dashboard-grid {
+                        grid-template-columns: 1fr;
+                    }
+                    aside {
+                        position: relative !important;
+                        top: 0 !important;
+                    }
+                    .bento-stats-span-4 {
+                        grid-column: span 12 !important;
+                    }
+                    .bento-stats-span-8 {
+                        grid-column: span 12 !important;
+                    }
+                }
+            `}</style>
         </div>
     );
+};
+
+const studioInputStyle = {
+    transition: 'all 0.3s ease'
 };
 
 export default UserProfile;

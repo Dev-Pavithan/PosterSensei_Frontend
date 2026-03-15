@@ -22,7 +22,7 @@ const Footer = () => {
     ];
 
     return (
-        <footer style={{ background: '#111827', color: 'white', marginTop: '3rem' }}>
+        <footer style={{ background: '#111827', color: 'white', }}>
             {/* Trust badges */}
             {isHome && (
                 <div style={{ background: '#f9fafb', borderTop: '1px solid var(--border)', padding: '1.5rem 0' }}>
@@ -80,6 +80,21 @@ const Footer = () => {
                     <Link to="/shop?sort=topRated" style={{ display: 'block', color: '#9ca3af', fontSize: '0.875rem', marginBottom: '0.5rem', transition: 'color var(--transition)' }}
                         onMouseEnter={e => e.currentTarget.style.color = 'var(--primary)'}
                         onMouseLeave={e => e.currentTarget.style.color = '#9ca3af'}>Best Sellers</Link>
+                </div>
+
+                {/* Company links */}
+                <div>
+                    <div style={{ fontWeight: 700, marginBottom: '1rem', color: 'white' }}>Company</div>
+                    {[
+                        ['About Us', '/about'],
+                        ['Store Locations', '/shop'],
+                        ['Room Makeover', '/shop'],
+                        ['Terms & Policies', '/']
+                    ].map(([label, to]) => (
+                        <Link key={label} to={to} style={{ display: 'block', color: '#9ca3af', fontSize: '0.875rem', marginBottom: '0.5rem', transition: 'color var(--transition)' }}
+                            onMouseEnter={e => e.currentTarget.style.color = 'var(--primary)'}
+                            onMouseLeave={e => e.currentTarget.style.color = '#9ca3af'}>{label}</Link>
+                    ))}
                 </div>
 
                 {/* Account links */}
