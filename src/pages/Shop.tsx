@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useLocation, useNavigate } from 'react-router-dom';
 import { SlidersHorizontal, ChevronDown, Heart, ShoppingCart, Star } from 'lucide-react';
 import axios from 'axios';
 import { useCart } from '../contexts/CartContext';
@@ -66,6 +66,8 @@ const ProductCard = ({ product }: { product: any }) => {
 
 const Shop = () => {
     const [searchParams, setSearchParams] = useSearchParams();
+    const location = useLocation();
+    const navigate = useNavigate();
     const [products, setProducts] = useState<any[]>([]);
     const [categories, setCategories] = useState<string[]>(['All']);
     const [loading, setLoading] = useState(true);
@@ -83,6 +85,17 @@ const Shop = () => {
     useEffect(() => {
         setLoading(true);
         const params: any = { page, sort, pageSize: 12 };
+        
+        // Handle internal state navigation (clean URL filtering)
+        if (location.state?.anime) {
+            const stateAnime = location.state.anime;
+            setActiveAnime(stateAnime);
+            setPage(1);
+            // Clear location state to prevent re-applying on refresh and keep URL clean
+            navigate(location.pathname, { replace: true, state: {} });
+            return; // Effect will re-run due to activeAnime change
+        }
+
         if (activeAnime !== 'All') params.anime = activeAnime;
         if (searchParams.get('anime')) setActiveAnime(searchParams.get('anime')!);
 
@@ -93,7 +106,7 @@ const Shop = () => {
             setProducts([]);
             setTotalPages(1);
         }).finally(() => setLoading(false));
-    }, [activeAnime, sort, page, searchParams]);
+    }, [activeAnime, sort, page, searchParams, location.state, navigate, location.pathname]);
 
     const handleAnime = (cat: string) => { setActiveAnime(cat); setPage(1); };
 

@@ -10,6 +10,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { showConfirm } from '../utils/alerts';
 import logo from '../images/non_background_logo.png';
 
 const Header = () => {
@@ -90,6 +91,9 @@ const Header = () => {
     };
 
     const handleLogout = async () => {
+        const confirmed = await showConfirm('Sign Out?', 'Are you sure you want to terminate your current session?');
+        if (!confirmed) return;
+        
         await logout();
         navigate('/login');
         setShowUserMenu(false);
@@ -101,6 +105,11 @@ const Header = () => {
             ...prev,
             [section]: !prev[section]
         }));
+    };
+
+    const handleCategoryClick = (cat: string) => {
+        navigate('/shop', { state: { anime: cat } });
+        setMobileMenuOpen(false);
     };
 
     useEffect(() => {
@@ -179,6 +188,7 @@ const Header = () => {
                 {/* Right: Navigation & Dropdown */}
                 <div className="desktop-header-actions" style={{ alignItems: 'center', gap: '1.5rem' }}>
                     <nav className="desktop-nav" style={{ gap: '1.25rem' }}>
+                        <Link to="/" style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--text-secondary)', transition: '0.2s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--primary)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--text-secondary)'}>Home</Link>
                         <Link to="/shop" style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--text-secondary)', transition: '0.2s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--primary)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--text-secondary)'}>Shop</Link>
                         <Link to="/about" style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--text-secondary)', transition: '0.2s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--primary)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--text-secondary)'}>About</Link>
                     </nav>
@@ -325,7 +335,16 @@ const Header = () => {
                 <nav className="desktop-categories" style={{ borderTop: '1px solid var(--border)', background: 'var(--surface)' }}>
                     <div className="container" style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', padding: '0.6rem 1rem', scrollbarWidth: 'none' }}>
                         {categories.map(cat => (
-                            <Link key={cat} to={cat === 'All' ? '/shop' : `/shop?anime=${encodeURIComponent(cat)}`} className="chip" style={{ flexShrink: 0, padding: '0.4rem 1.25rem', fontSize: '0.85rem' }}>{cat}</Link>
+                            <button 
+                                key={cat} 
+                                onClick={() => handleCategoryClick(cat)} 
+                                className="chip" 
+                                style={{ flexShrink: 0, padding: '0.4rem 1.25rem', fontSize: '0.85rem', background: 'var(--surface-2)', border: '1px solid var(--border)', cursor: 'pointer', transition: '0.2s' }}
+                                onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--primary)'}
+                                onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
+                            >
+                                {cat}
+                            </button>
                         ))}
                     </div>
                 </nav>
@@ -372,7 +391,14 @@ const Header = () => {
                                         <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem' }}>Popular Anime</div>
                                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                                             {categories.slice(1, 10).map(cat => (
-                                                <Link key={cat} to={`/shop?anime=${encodeURIComponent(cat)}`} onClick={() => setMobileMenuOpen(false)} className="chip" style={{ fontSize: '0.8rem' }}>{cat}</Link>
+                                                <button 
+                                                    key={cat} 
+                                                    onClick={() => handleCategoryClick(cat)} 
+                                                    className="chip" 
+                                                    style={{ fontSize: '0.8rem', background: 'var(--surface-2)', border: '1px solid var(--border)', cursor: 'pointer' }}
+                                                >
+                                                    {cat}
+                                                </button>
                                             ))}
                                         </div>
                                     </div>

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ChevronLeft, Package, MapPin, Truck, CreditCard, CheckCircle2, Tag } from 'lucide-react';
 import axios from 'axios';
+import { showError, showSuccess } from '../utils/alerts';
 import { useAuth } from '../contexts/AuthContext';
 
 const OrderDetail = () => {
@@ -30,10 +31,10 @@ const OrderDetail = () => {
         setUpdating(true);
         try {
             await axios.put(`/api/orders/${id}/status`, { status, trackingId });
+            showSuccess('Status Synchronized', 'The order status has been updated successfully.');
             fetchOrder();
-            alert('Order status updated!');
         } catch (err) {
-            alert('Update failed');
+            showError('Update Failed', 'An error occurred while attempting to synchronize the order status.');
         } finally {
             setUpdating(false);
         }

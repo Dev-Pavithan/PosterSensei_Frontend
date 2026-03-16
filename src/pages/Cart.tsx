@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Trash2, Plus, Minus, ShoppingBag, Tag, ArrowRight, ShoppingCart, X, Shield } from 'lucide-react';
+import { showSuccess, showError } from '../utils/alerts';
 import axios from 'axios';
 import { useCart } from '../contexts/CartContext';
 
@@ -21,7 +22,7 @@ const Cart = () => {
             applyCoupon(data);
             setCouponCode('');
         } catch (err: any) {
-            alert(err.response?.data?.message || 'Invalid coupon');
+            showError('Invalid Coupon', err.response?.data?.message || 'The entered coupon code is not valid.');
         } finally {
             setCouponLoading(false);
         }

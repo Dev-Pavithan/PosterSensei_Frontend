@@ -256,3 +256,48 @@ ul { list-style: none; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 5px; border: 2px solid var(--bg); }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* ── SweetAlert2 Premium Customization ── */
+.premium-swal-popup {
+  padding: 2rem !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+.premium-swal-button {
+  padding: 0.75rem 2rem !important;
+  border-radius: var(--radius-full) !important;
+  font-weight: 700 !important;
+  font-family: var(--font) !important;
+  box-shadow: 0 10px 20px -10px var(--primary) !important;
+  transition: all var(--transition) !important;
+}
+.premium-swal-button:hover {
+  transform: scale(1.02) !important;
+}
+
+.premium-swal-cancel {
+  padding: 0.75rem 2rem !important;
+  border-radius: var(--radius-full) !important;
+  font-weight: 700 !important;
+  font-family: var(--font) !important;
+  background: var(--surface-2) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border) !important;
+  transition: all var(--transition) !important;
+}
+.premium-swal-cancel:hover {
+  background: var(--bg) !important;
+  border-color: var(--primary) !important;
+  color: var(--primary) !important;
+}
+
+.swal2-title {
+  font-weight: 900 !important;
+  letter-spacing: -0.5px !important;
+}
+
+.swal2-html-container {
+  color: var(--text-secondary) !important;
+  font-weight: 500 !important;
+}

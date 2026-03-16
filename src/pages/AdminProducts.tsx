@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Plus, Pencil, Trash2, X, Save, Image as ImageIcon, MoreHorizontal, Star, Eye, Upload, CloudLightning, Info, Layout, Tag, DollarSign, Box } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
+import { showAlert, showConfirm, showError, showSuccess, showToast } from '../utils/alerts';
 
 const emptyForm = { title: '', anime: '', category: 'Posters', price: '', originalPrice: '', discount: '', imageUrl: '', stock: '', description: '', sizes: 'A4,A3,A2', featured: false };
 
@@ -53,7 +54,7 @@ const AdminProducts = () => {
 
     const handleSave = async () => {
         if (!form.title || !form.imageUrl) {
-            alert('Title and Image are required!');
+            showError('Missing Info', 'Title and Image are required!');
             return;
         }
         setSaving(true);
@@ -66,20 +67,23 @@ const AdminProducts = () => {
             }
             setShowModal(false);
             fetchProducts();
+            showSuccess('Saved', editId ? 'Poster updated successfully.' : 'New poster published to arsenal.');
         } catch (err) {
-            alert('Error saving product. Check console.');
+            showError('Save Failed', 'We encountered an error while saving the product.');
         } finally {
             setSaving(false);
         }
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Delete this product?')) return;
+        const result = await showConfirm('Delete Poster?', 'Are you sure you want to delete this product? This action is permanent.', 'Delete Forever');
+        if (!result.isConfirmed) return;
         try {
             await axios.delete(`/api/products/${id}`);
             setProducts(ps => ps.filter(p => p._id !== id));
+            showToast('Poster deleted successfully');
         } catch (err) {
-            alert('Failed to delete product');
+            showError('Deletion Failed', 'Failed to delete product from inventory.');
         }
         setOpenMenuId(null);
     };
@@ -88,8 +92,9 @@ const AdminProducts = () => {
         try {
             await axios.put(`/api/products/${p._id}`, { featured: !p.featured });
             fetchProducts();
+            showToast('Featured status updated');
         } catch (err) {
-            alert('Failed to update product');
+            showError('Update Failed', 'Failed to update product featured status.');
         }
         setOpenMenuId(null);
     };
@@ -116,7 +121,7 @@ const AdminProducts = () => {
 
     const handleFileUpload = async (file: File) => {
         if (!file.type.startsWith('image/')) {
-            alert('Please upload an image file (PNG, JPG, etc)');
+            showError('Invalid File', 'Please upload an image file (PNG, JPG, etc)');
             return;
         }
         setUploadingImage(true);
@@ -127,8 +132,9 @@ const AdminProducts = () => {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             setForm(f => ({ ...f, imageUrl: data.imageUrl }));
+            showToast('Image uploaded successfully');
         } catch (err: any) {
-            alert(err.response?.data?.message || 'Image upload failed. Is Cloudinary configured?');
+            showError('Upload Failed', err.response?.data?.message || 'Image upload failed. Is Cloudinary configured?');
         } finally {
             setUploadingImage(false);
         }
@@ -159,7 +165,7 @@ const AdminProducts = () => {
                             Product Arsenal
                         </h2>
                         <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', fontWeight: 500, marginTop: '0.4rem', lineHeight: 1.4 }}>
-                            Design, refine, and deploy your master collection.
+                            Manage, refine, and update your poster collection.
                         </p>
                     </div>
                     <button onClick={openAdd} className="btn btn-primary" style={{
@@ -171,7 +177,7 @@ const AdminProducts = () => {
                         width: 'auto',
                         minWidth: 'fit-content'
                     }}>
-                        <Plus size={20} /> Create New Masterpiece
+                        <Plus size={20} /> Create New Poster
                     </button>
                 </div>
 
@@ -430,16 +436,16 @@ const AdminProducts = () => {
                                     </div>
                                     <div>
                                         <div style={{ fontWeight: 800, fontSize: '1.25rem', color: 'var(--text-primary)' }}>{editId ? 'Refine Product' : 'Create New Poster'}</div>
-                                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{editId ? `Editing: ${form.title}` : 'Adding to your masterpiece collection'}</div>
+                                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{editId ? `Editing: ${form.title}` : 'Add a new item to your storefront'}</div>
                                     </div>
                                 </div>
                                 <button onClick={() => setShowModal(false)} className="theme-toggle" style={{ width: '36px', height: '36px' }}><X size={20} /></button>
                             </div>
 
-                            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 380px) 1fr', overflow: 'hidden', flex: 1 }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 900 ? '1fr' : 'minmax(300px, 380px) 1fr', overflowX: 'hidden', overflowY: 'auto', flex: 1 }}>
 
                                 {/* Image Upload Sidebar */}
-                                <div style={{ background: 'var(--surface-2)', padding: '2rem', borderRight: '1px solid var(--border)', overflowY: 'auto' }}>
+                                <div style={{ background: 'var(--surface-2)', padding: window.innerWidth < 640 ? '1.5rem' : '2rem', borderRight: window.innerWidth < 900 ? 'none' : '1px solid var(--border)', borderBottom: window.innerWidth < 900 ? '1px solid var(--border)' : 'none' }}>
                                     <label className="input-label" style={{ marginBottom: '1rem', display: 'block' }}>Product Visualization</label>
 
                                     <div
@@ -449,7 +455,7 @@ const AdminProducts = () => {
                                         onDrop={handleDrop}
                                         style={{
                                             width: '100%',
-                                            aspectRatio: '1',
+                                            aspectRatio: window.innerWidth < 640 ? '4/5' : '1',
                                             background: dragActive ? 'var(--primary-light)' : 'var(--surface)',
                                             border: `2px dashed ${dragActive ? 'var(--primary)' : 'var(--border)'}`,
                                             borderRadius: '24px',
@@ -483,45 +489,45 @@ const AdminProducts = () => {
                                             </>
                                         ) : (
                                             <>
-                                                <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', marginBottom: '1rem' }}>
-                                                    <ImageIcon size={28} />
+                                                <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', marginBottom: '1rem' }}>
+                                                    <ImageIcon size={24} />
                                                 </div>
-                                                <div style={{ fontWeight: 800, color: 'var(--text-primary)', marginBottom: '4px' }}>Drag & Drop</div>
-                                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>or click to browse artwork</div>
+                                                <div style={{ fontWeight: 800, color: 'var(--text-primary)', marginBottom: '4px', fontSize: '0.9rem' }}>Drag & Drop</div>
+                                                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>or click to browse</div>
                                             </>
                                         )}
                                         <input ref={fileInputRef} type="file" style={{ display: 'none' }} accept="image/*" onChange={e => e.target.files && handleFileUpload(e.target.files[0])} />
                                     </div>
 
                                     <div style={{ marginTop: '1.5rem' }}>
-                                        <label className="input-label">Direct Asset URL</label>
+                                        <label className="input-label" style={{ fontSize: '0.75rem' }}>Direct Asset URL</label>
                                         <input type="text" className="input" placeholder="https://..." value={form.imageUrl} onChange={e => setForm(f => ({ ...f, imageUrl: e.target.value }))} style={{ fontSize: '0.8rem', padding: '0.6rem 1rem' }} />
                                     </div>
 
-                                    <div style={{ marginTop: '2rem', padding: '1.25rem', background: 'var(--bg)', borderRadius: '16px', border: '1px solid var(--border)' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--primary)', fontWeight: 800, fontSize: '0.85rem', marginBottom: '0.5rem' }}>
-                                            <Info size={16} /> Pro Tip
+                                    <div style={{ marginTop: '2rem', padding: '1rem', background: 'var(--bg)', borderRadius: '16px', border: '1px solid var(--border)' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--primary)', fontWeight: 800, fontSize: '0.8rem', marginBottom: '0.5rem' }}>
+                                            <Info size={14} /> Pro Tip
                                         </div>
-                                        <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                                            High-quality vertical posters (2:3 aspect ratio) look best in your gallery. PNG or WebP recommended.
+                                        <p style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
+                                            Vertical posters (2:3) look best. PNG/WebP recommended for quality.
                                         </p>
                                     </div>
                                 </div>
 
                                 {/* Form Area */}
-                                <div style={{ padding: '2rem', overflowY: 'auto' }}>
+                                <div style={{ padding: window.innerWidth < 640 ? '1.5rem' : '2rem', overflowY: window.innerWidth < 900 ? 'visible' : 'auto' }}>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
 
                                         {/* Basic Details Group */}
                                         <section>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
-                                                <div style={{ width: '4px', height: '18px', background: 'var(--primary)', borderRadius: '2px' }} />
-                                                <h4 style={{ fontWeight: 800, fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Core Information</h4>
+                                                <div style={{ width: '4px', height: '16px', background: 'var(--primary)', borderRadius: '2px' }} />
+                                                <h4 style={{ fontWeight: 800, fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Core Information</h4>
                                             </div>
-                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+                                            <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 640 ? '1fr' : '1fr 1fr', gap: '1.25rem' }}>
                                                 <div className="input-group" style={{ gridColumn: '1/-1' }}>
                                                     <label className="input-label"><Tag size={12} style={{ marginRight: '4px' }} /> Product Title</label>
-                                                    <input className="input" placeholder="e.g. Solo Leveling - Sung Jinwoo Shadow Monarch" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} />
+                                                    <input className="input" placeholder="e.g. Solo Leveling - Sung Jinwoo" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} />
                                                 </div>
                                                 <div className="input-group">
                                                     <label className="input-label"><CloudLightning size={12} style={{ marginRight: '4px' }} /> Anime/Series</label>
@@ -539,10 +545,10 @@ const AdminProducts = () => {
                                         {/* Pricing and Inventory */}
                                         <section>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
-                                                <div style={{ width: '4px', height: '18px', background: 'var(--secondary)', borderRadius: '2px' }} />
-                                                <h4 style={{ fontWeight: 800, fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Inventory & Pricing</h4>
+                                                <div style={{ width: '4px', height: '16px', background: 'var(--secondary)', borderRadius: '2px' }} />
+                                                <h4 style={{ fontWeight: 800, fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Stock & Pricing</h4>
                                             </div>
-                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.25rem' }}>
+                                            <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 640 ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)', gap: '1.25rem' }}>
                                                 <div className="input-group">
                                                     <label className="input-label"><DollarSign size={12} style={{ marginRight: '4px' }} /> Sale Price</label>
                                                     <input type="number" className="input" value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))} />
@@ -559,9 +565,9 @@ const AdminProducts = () => {
                                                     <label className="input-label"><Box size={12} style={{ marginRight: '4px' }} /> Stock Units</label>
                                                     <input type="number" className="input" value={form.stock} onChange={e => setForm(f => ({ ...f, stock: e.target.value }))} />
                                                 </div>
-                                                <div className="input-group" style={{ gridColumn: 'span 2' }}>
-                                                    <label className="input-label">Available Dimensions</label>
-                                                    <input className="input" placeholder="A4, A3, A2, A1, Custom" value={form.sizes} onChange={e => setForm(f => ({ ...f, sizes: e.target.value }))} />
+                                                <div className="input-group" style={{ gridColumn: window.innerWidth < 640 ? 'span 2' : 'span 2' }}>
+                                                    <label className="input-label">Dimensions</label>
+                                                    <input className="input" placeholder="A4, A3, A2..." value={form.sizes} onChange={e => setForm(f => ({ ...f, sizes: e.target.value }))} />
                                                 </div>
                                             </div>
                                         </section>
@@ -569,17 +575,17 @@ const AdminProducts = () => {
                                         {/* Description and Traits */}
                                         <section>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
-                                                <div style={{ width: '4px', height: '18px', background: 'var(--accent)', borderRadius: '2px' }} />
-                                                <h4 style={{ fontWeight: 800, fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Description & Highlights</h4>
+                                                <div style={{ width: '4px', height: '16px', background: 'var(--accent)', borderRadius: '2px' }} />
+                                                <h4 style={{ fontWeight: 800, fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Description</h4>
                                             </div>
                                             <div className="input-group" style={{ marginBottom: '1rem' }}>
                                                 <textarea className="input" placeholder="Tell the story behind this artwork..." rows={4} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} style={{ resize: 'none' }} />
                                             </div>
-                                            <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.25rem', background: form.featured ? 'var(--primary-light)' : 'var(--surface-2)', borderRadius: '16px', border: `2px solid ${form.featured ? 'var(--primary)' : 'var(--border)'}`, cursor: 'pointer', transition: '0.2s' }}>
-                                                <input type="checkbox" checked={form.featured} onChange={e => setForm(f => ({ ...f, featured: e.target.checked }))} style={{ width: '22px', height: '22px', accentColor: 'var(--primary)' }} />
+                                            <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', background: form.featured ? 'var(--primary-light)' : 'var(--surface-2)', borderRadius: '16px', border: `2px solid ${form.featured ? 'var(--primary)' : 'var(--border)'}`, cursor: 'pointer', transition: '0.2s' }}>
+                                                <input type="checkbox" checked={form.featured} onChange={e => setForm(f => ({ ...f, featured: e.target.checked }))} style={{ width: '20px', height: '20px', accentColor: 'var(--primary)' }} />
                                                 <div>
-                                                    <div style={{ fontWeight: 800, fontSize: '0.95rem', color: form.featured ? 'var(--primary)' : 'inherit' }}>Feature this product</div>
-                                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Pinned to homepage and top of discovery results</div>
+                                                    <div style={{ fontWeight: 800, fontSize: '0.9rem', color: form.featured ? 'var(--primary)' : 'inherit' }}>Feature product</div>
+                                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Pin to homepage/top results</div>
                                                 </div>
                                             </label>
                                         </section>
@@ -588,10 +594,10 @@ const AdminProducts = () => {
                             </div>
 
                             {/* Modal Footer */}
-                            <div style={{ padding: '1.5rem 2rem', borderTop: '1px solid var(--border)', display: 'flex', gap: '1rem', justifyContent: 'flex-end', background: 'var(--surface)' }}>
-                                <button onClick={() => setShowModal(false)} className="btn btn-outline" style={{ borderRadius: '14px', paddingInline: '2rem' }}>Discard Changes</button>
-                                <button onClick={handleSave} disabled={saving || uploadingImage} className="btn btn-primary btn-lg" style={{ borderRadius: '14px', minWidth: '180px' }}>
-                                    {saving ? 'Publishing...' : <><Save size={18} /> {editId ? 'Commit Updates' : 'Publish Product'}</>}
+                            <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid var(--border)', display: 'flex', gap: '1rem', justifyContent: 'flex-end', background: 'var(--surface)', position: 'sticky', bottom: 0, zIndex: 10 }}>
+                                <button onClick={() => setShowModal(false)} className="btn btn-outline" style={{ borderRadius: '12px', paddingInline: '1.5rem', fontSize: '0.9rem' }}>Discard</button>
+                                <button onClick={handleSave} disabled={saving || uploadingImage} className="btn btn-primary" style={{ borderRadius: '12px', minWidth: window.innerWidth < 640 ? '120px' : '180px', fontSize: '0.9rem' }}>
+                                    {saving ? 'Saving...' : <><Save size={18} /> {editId ? 'Commit' : 'Publish'}</>}
                                 </button>
                             </div>
                         </motion.div>
@@ -611,59 +617,61 @@ const AdminProducts = () => {
 
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem 2rem', borderBottom: '1px solid var(--border)' }}>
                                 <div style={{ fontWeight: 900, fontSize: '1.25rem', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                    <Eye size={22} className="text-primary" /> Master Data View
+                                    <Eye size={22} className="text-primary" /> Product Details View
                                 </div>
                                 <button onClick={() => setViewProduct(null)} className="theme-toggle"><X size={20} /></button>
                             </div>
 
-                            <div style={{ padding: '2.5rem', overflowY: 'auto', flex: 1 }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '3rem' }}>
+                            <div style={{ padding: window.innerWidth < 640 ? '1.5rem' : '2.5rem', overflowY: 'auto', flex: 1 }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 900 ? '1fr' : 'repeat(auto-fit, minmax(320px, 1fr))', gap: window.innerWidth < 640 ? '1.5rem' : '3rem' }}>
                                     <div style={{ position: 'relative' }}>
                                         <div style={{ position: 'absolute', inset: '-1rem', background: 'var(--bg)', borderRadius: '32px', zIndex: -1 }} />
-                                        <img src={viewProduct.imageUrl} alt={viewProduct.title} style={{ width: '100%', maxHeight: '450px', objectFit: 'contain', borderRadius: '24px', boxShadow: 'var(--shadow-lg)', background: 'white', padding: '1rem' }} />
+                                        <img src={viewProduct.imageUrl} alt={viewProduct.title} style={{ width: '100%', maxHeight: window.innerWidth < 640 ? '300px' : '450px', objectFit: 'contain', borderRadius: '24px', boxShadow: 'var(--shadow-lg)', background: 'white', padding: '1rem' }} />
                                     </div>
                                     <div>
                                         <div style={{ marginBottom: '2rem' }}>
-                                            <div style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--primary)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                            <div style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--primary)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                                 {viewProduct.anime} <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: 'var(--border)' }} /> {viewProduct.category}
                                             </div>
-                                            <h3 style={{ fontSize: '2.25rem', fontWeight: 900, lineHeight: 1.1, marginBottom: '1rem' }}>{viewProduct.title}</h3>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-                                                <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--text-primary)' }}>LKR {viewProduct.price.toLocaleString()}</div>
-                                                {viewProduct.originalPrice > viewProduct.price && (
-                                                    <div style={{ fontSize: '1.25rem', color: 'var(--text-muted)', textDecoration: 'line-through', fontWeight: 600 }}>LKR {viewProduct.originalPrice.toLocaleString()}</div>
-                                                )}
-                                                {viewProduct.discount > 0 && <span className="badge badge-success" style={{ fontSize: '0.9rem', padding: '6px 12px' }}>{viewProduct.discount}% REDUCTION</span>}
+                                            <h3 style={{ fontSize: window.innerWidth < 640 ? '1.5rem' : '2.25rem', fontWeight: 900, lineHeight: 1.1, marginBottom: '1rem' }}>{viewProduct.title}</h3>
+                                            <div style={{ display: 'flex', alignItems: window.innerWidth < 640 ? 'flex-start' : 'center', gap: '1.5rem', flexDirection: window.innerWidth < 640 ? 'column' : 'row' }}>
+                                                <div style={{ fontSize: window.innerWidth < 640 ? '1.5rem' : '2rem', fontWeight: 900, color: 'var(--text-primary)' }}>LKR {viewProduct.price.toLocaleString()}</div>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                                    {viewProduct.originalPrice > viewProduct.price && (
+                                                        <div style={{ fontSize: '1rem', color: 'var(--text-muted)', textDecoration: 'line-through', fontWeight: 600 }}>LKR {viewProduct.originalPrice.toLocaleString()}</div>
+                                                    )}
+                                                    {viewProduct.discount > 0 && <span className="badge badge-success" style={{ fontSize: '0.75rem', padding: '4px 10px' }}>{viewProduct.discount}% OFF</span>}
+                                                </div>
                                             </div>
                                         </div>
 
-                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', marginBottom: '2rem' }}>
-                                            <div style={{ background: 'var(--surface-2)', padding: '1.25rem', borderRadius: '20px', border: '1px solid var(--border)' }}>
-                                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.5rem' }}>Asset Integrity</div>
-                                                <div style={{ fontWeight: 800, fontSize: '1.25rem', color: viewProduct.stock > 0 ? 'var(--success)' : 'var(--error)' }}>
-                                                    {viewProduct.stock > 0 ? `${viewProduct.stock} Managed Units` : 'Stock Depleted'}
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem' }}>
+                                            <div style={{ background: 'var(--surface-2)', padding: '1rem', borderRadius: '20px', border: '1px solid var(--border)' }}>
+                                                <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.5rem' }}>Inventory</div>
+                                                <div style={{ fontWeight: 800, fontSize: '1rem', color: viewProduct.stock > 0 ? 'var(--success)' : 'var(--error)' }}>
+                                                    {viewProduct.stock > 0 ? `${viewProduct.stock} Units` : 'Sold Out'}
                                                 </div>
                                             </div>
-                                            <div style={{ background: 'var(--surface-2)', padding: '1.25rem', borderRadius: '20px', border: '1px solid var(--border)' }}>
-                                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.5rem' }}>Storefront Status</div>
-                                                <div style={{ fontWeight: 800, fontSize: '1.25rem' }}>{viewProduct.featured ? 'Priority Feature' : 'Standard Grid'}</div>
+                                            <div style={{ background: 'var(--surface-2)', padding: '1rem', borderRadius: '20px', border: '1px solid var(--border)' }}>
+                                                <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.5rem' }}>Placement</div>
+                                                <div style={{ fontWeight: 800, fontSize: '1rem' }}>{viewProduct.featured ? 'Featured' : 'Standard'}</div>
                                             </div>
                                         </div>
 
                                         <div style={{ marginBottom: '2rem' }}>
-                                            <div style={{ fontSize: '0.8rem', color: 'var(--text-primary)', fontWeight: 800, marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                <Info size={16} className="text-primary" /> Editorial Description
+                                            <div style={{ fontSize: '0.75rem', color: 'var(--text-primary)', fontWeight: 800, marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                <Info size={14} className="text-primary" /> Story & Details
                                             </div>
-                                            <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', lineHeight: 1.7, background: 'var(--bg)', padding: '1.5rem', borderRadius: '16px' }}>
-                                                {viewProduct.description || 'Our master curators are still crafting the perfect description for this epic piece.'}
+                                            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.6, background: 'var(--bg)', padding: '1rem', borderRadius: '16px' }}>
+                                                {viewProduct.description || 'No description provided for this product.'}
                                             </p>
                                         </div>
 
                                         <div>
-                                            <div style={{ fontSize: '0.8rem', color: 'var(--text-primary)', fontWeight: 800, marginBottom: '0.75rem' }}>Available Dimensions</div>
-                                            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                                            <div style={{ fontSize: '0.75rem', color: 'var(--text-primary)', fontWeight: 800, marginBottom: '0.75rem' }}>Available Dimensions</div>
+                                            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                                                 {(viewProduct.sizes || []).map((s: string) => (
-                                                    <span key={s} style={{ padding: '0.5rem 1.25rem', background: 'white', border: '2px solid var(--primary-light)', color: 'var(--primary)', borderRadius: '14px', fontSize: '0.9rem', fontWeight: 800 }}>{s}</span>
+                                                    <span key={s} style={{ padding: '0.4rem 1rem', background: 'white', border: '2px solid var(--primary-light)', color: 'var(--primary)', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 800 }}>{s}</span>
                                                 ))}
                                             </div>
                                         </div>
@@ -671,9 +679,9 @@ const AdminProducts = () => {
                                 </div>
                             </div>
 
-                            <div style={{ padding: '1.5rem 2rem', borderTop: '1px solid var(--border)', display: 'flex', gap: '1rem', justifyContent: 'flex-end', background: 'var(--surface-2)' }}>
-                                <button onClick={() => setViewProduct(null)} className="btn btn-ghost" style={{ border: '1px solid var(--border)', borderRadius: '14px', color: 'var(--text-primary)' }}>Close</button>
-                                <button onClick={() => { setViewProduct(null); openEdit(viewProduct); }} className="btn btn-primary" style={{ borderRadius: '14px' }}><Pencil size={16} /> Edit Attributes</button>
+                            <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid var(--border)', display: 'flex', gap: '1rem', justifyContent: 'flex-end', background: 'var(--surface-2)', position: 'sticky', bottom: 0, zIndex: 10 }}>
+                                <button onClick={() => setViewProduct(null)} className="btn btn-ghost" style={{ border: '1px solid var(--border)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.9rem' }}>Close</button>
+                                <button onClick={() => { setViewProduct(null); openEdit(viewProduct); }} className="btn btn-primary" style={{ borderRadius: '12px', fontSize: '0.9rem' }}><Pencil size={16} /> Edit Attributes</button>
                             </div>
                         </motion.div>
                     </div>

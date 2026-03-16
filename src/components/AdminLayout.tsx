@@ -3,11 +3,13 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { 
     LayoutDashboard, Package, ShoppingCart, LogOut, ArrowLeft, 
     Maximize, Minimize, Moon, Sun, ChevronLeft, ChevronRight, 
-    Users2, Menu, X, Settings, Bell, Sparkles
+    Users2, Menu, X, Mail, Bell
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import axios from 'axios';
+import { usePushNotifications } from '../hooks/usePushNotifications';
 
 const AdminLayout = () => {
     const { logout, user } = useAuth();
@@ -17,11 +19,134 @@ const AdminLayout = () => {
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [isMobileOpen, setIsMobileOpen] = useState(false);
 
+    usePushNotifications(user?.isAdmin || false);
+
+    // Notification State
+    const [lastOrderTime, setLastOrderTime] = useState<number>(Date.now());
+    const [lastMessageTime, setLastMessageTime] = useState<number>(Date.now());
+    const [activeNotification, setActiveNotification] = useState<{title: string, message: string} | null>(null);
+    const [notifications, setNotifications] = useState<any[]>([]);
+    const [showNotifDropdown, setShowNotifDropdown] = useState(false);
+
+    const handleNotificationClick = async (notification: any) => {
+        if (!notification.isRead) {
+            await markAsRead(notification._id);
+        }
+        
+        // Deep-link navigation
+        if (notification.type === 'order') {
+            navigate(`/admin/orders?view=${notification.referenceId}`);
+        } else if (notification.type === 'contact') {
+            navigate(`/admin/contact?highlight=${notification.referenceId}`);
+        }
+        
+        setShowNotifDropdown(false);
+    };
+    
+    const fetchNotifications = async () => {
+        try {
+            const { data } = await axios.get('/api/notifications');
+            setNotifications(data);
+        } catch (error) {
+            console.error('Error fetching notifications:', error);
+        }
+    };
+
+    const markAsRead = async (id: string) => {
+        try {
+            await axios.put(`/api/notifications/${id}/read`);
+            fetchNotifications();
+        } catch (error) {
+            console.error('Error marking notification as read:', error);
+        }
+    };
+
+    const markAllRead = async () => {
+        try {
+            await axios.put('/api/notifications/read-all');
+            fetchNotifications();
+        } catch (error) {
+            console.error('Error marking all notifications as read:', error);
+        }
+    };
+
+    const clearAll = async () => {
+        try {
+            await axios.delete('/api/notifications/clear');
+            setNotifications([]);
+        } catch (error) {
+            console.error('Error clearing notifications:', error);
+        }
+    };
+
+    // Using a proper and working whistle sound for notifications
+    const NOTIFICATION_SOUND = "https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg";
+
     useEffect(() => {
         const handleFullscreenChange = () => setIsFullscreen(!!document.fullscreenElement);
         document.addEventListener('fullscreenchange', handleFullscreenChange);
-        return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
-    }, []);
+
+        // Initial fetch
+        fetchNotifications();
+
+        // 1. Establish SSE Connection for "Instant" Updates
+        const eventSource = new EventSource('/api/notifications/stream');
+
+        eventSource.onmessage = (event) => {
+            try {
+                const newNotif = JSON.parse(event.data);
+                
+                // Update local notification list instantly
+                setNotifications(prev => [newNotif, ...prev]);
+
+                // Play sound
+                const audio = new Audio(NOTIFICATION_SOUND);
+                audio.play().catch(e => console.log('Audio playback prevented:', e));
+
+                // Show toast-like active notification
+                setActiveNotification({ 
+                    title: newNotif.type === 'order' ? 'New Order! 🛍️' : 'New Message! ✉️', 
+                    message: newNotif.message 
+                });
+                setTimeout(() => setActiveNotification(null), 8000);
+
+                // 2. Dispatch global event to tell other pages (Orders/Contacts) to refresh
+                window.dispatchEvent(new CustomEvent('admin-data-refresh', { detail: { type: newNotif.type } }));
+
+            } catch (err) {
+                console.error("SSE Parse Error:", err);
+            }
+        };
+
+        eventSource.onerror = (err) => {
+            console.error("SSE Connection Error:", err);
+            eventSource.close();
+            // Reconnect logic after 5s
+            setTimeout(() => {
+                // This would trigger a re-run of this effect if state was tied to it, 
+                // but simpler is to just let the interval polling catch up if SSE fails.
+            }, 5000);
+        };
+
+        // 3. Fallback Polling (Keep as backup for reliability)
+        const checkNotifications = async () => {
+            try {
+                fetchNotifications();
+            } catch (err) {
+                console.error("Failed to fetch notification data:", err);
+            }
+        };
+
+        const intervalId = setInterval(checkNotifications, 45000); // Slower polling since we have SSE
+
+        return () => {
+            document.removeEventListener('fullscreenchange', handleFullscreenChange);
+            clearInterval(intervalId);
+            eventSource.close();
+        };
+    }, []); // Only run once on mount
+
+    const unreadCount = notifications.filter(n => !n.isRead).length;
 
     const toggleFullscreen = () => {
         if (!document.fullscreenElement) {
@@ -71,6 +196,7 @@ const AdminLayout = () => {
         { path: '/admin/products', icon: <Package size={20} />, label: 'Products' },
         { path: '/admin/orders', icon: <ShoppingCart size={20} />, label: 'Orders' },
         { path: '/admin/users', icon: <Users2 size={20} />, label: 'Users' },
+        { path: '/admin/contact', icon: <Mail size={20} />, label: 'Messages' },
     ];
 
     const sidebarWidth = isExpanded ? '280px' : '90px';
@@ -193,8 +319,82 @@ const AdminLayout = () => {
                 <button onClick={() => setIsMobileOpen(true)} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', padding: '0.5rem' }}>
                     <Menu size={24} />
                 </button>
-                <div style={{ fontWeight: 900, fontSize: '1.1rem' }}>POSTER<span style={{ color: 'var(--primary)' }}>SENSEI</span></div>
-                <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>{user.name[0]}</div>
+                
+                <div style={{ position: 'relative' }}>
+                    <button onClick={() => setShowNotifDropdown(!showNotifDropdown)} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', position: 'relative', padding: '0.5rem' }}>
+                        <Bell size={24} />
+                        {unreadCount > 0 && (
+                            <span style={{ position: 'absolute', top: 4, right: 4, background: 'var(--primary)', color: 'white', fontSize: '10px', fontWeight: 900, padding: '2px 6px', borderRadius: '10px', border: '2px solid var(--surface)' }}>
+                                {unreadCount > 9 ? '9+' : unreadCount}
+                            </span>
+                        )}
+                    </button>
+
+                    <AnimatePresence>
+                        {showNotifDropdown && (
+                            <>
+                                <motion.div 
+                                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                                    onClick={() => setShowNotifDropdown(false)}
+                                    style={{ position: 'fixed', inset: 0, zIndex: 998 }}
+                                />
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    style={{
+                                        position: 'absolute', top: '100%', right: -20, width: '320px', 
+                                        background: 'var(--surface)', border: '1px solid var(--border)',
+                                        borderRadius: '20px', boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
+                                        zIndex: 999, overflow: 'hidden', marginTop: '10px'
+                                    }}
+                                >
+                                    <div style={{ padding: '1rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 900 }}>Alerts</h3>
+                                        <div style={{ display: 'flex', gap: '8px' }}>
+                                            <button onClick={markAllRead} style={{ fontSize: '11px', color: 'var(--primary)', background: 'none', border: 'none', fontWeight: 700, cursor: 'pointer' }}>Mark all</button>
+                                            <button onClick={clearAll} style={{ fontSize: '11px', color: '#ef4444', background: 'none', border: 'none', fontWeight: 700, cursor: 'pointer' }}>Clear</button>
+                                        </div>
+                                    </div>
+                                    <div style={{ maxHeight: '400px', overflowY: 'auto', padding: '0.5rem' }}>
+                                        {notifications.length === 0 ? (
+                                            <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>No new alerts.</div>
+                                        ) : (
+                                            notifications.map(n => (
+                                                <div 
+                                                    key={n._id} 
+                                                    onClick={() => !n.isRead && markAsRead(n._id)}
+                                                    style={{ 
+                                                        padding: '1rem', borderRadius: '12px', marginBottom: '4px',
+                                                        background: n.isRead ? 'transparent' : 'rgba(var(--primary-rgb), 0.05)',
+                                                        cursor: n.isRead ? 'default' : 'pointer',
+                                                        transition: 'background 0.2s',
+                                                        position: 'relative'
+                                                    }}
+                                                >
+                                                    <div style={{ display: 'flex', gap: '0.75rem' }}>
+                                                        <div style={{ 
+                                                            width: 32, height: 32, borderRadius: '10px', 
+                                                            background: n.type === 'order' ? 'rgba(var(--primary-rgb), 0.1)' : 'rgba(56, 189, 248, 0.1)',
+                                                            color: n.type === 'order' ? 'var(--primary)' : '#38bdf8',
+                                                            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                                                        }}>
+                                                            {n.type === 'order' ? <ShoppingCart size={16} /> : <Mail size={16} />}
+                                                        </div>
+                                                        <div>
+                                                            <div style={{ fontSize: '0.85rem', fontWeight: n.isRead ? 500 : 800, color: 'var(--text-primary)', lineHeight: 1.4 }}>{n.message}</div>
+                                                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>{new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </motion.div>
+                            </>
+                        )}
+                    </AnimatePresence>
+                </div>
             </header>
 
             {/* MAIN CONTENT AREA */}
@@ -211,11 +411,138 @@ const AdminLayout = () => {
                     margin: '0 auto',
                     width: '100%'
                 }}>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem', gap: '1rem', alignItems: 'center' }} className="desktop-header-actions">
+                         <div style={{ position: 'relative' }}>
+                            <button onClick={() => setShowNotifDropdown(!showNotifDropdown)} style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)', cursor: 'pointer', position: 'relative', padding: '0.75rem', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <Bell size={20} />
+                                {unreadCount > 0 && (
+                                    <span style={{ position: 'absolute', top: -5, right: -5, background: 'var(--primary)', color: 'white', fontSize: '10px', fontWeight: 900, padding: '2px 6px', borderRadius: '10px', border: '2px solid var(--bg)' }}>
+                                        {unreadCount > 9 ? '9+' : unreadCount}
+                                    </span>
+                                )}
+                            </button>
+                            <AnimatePresence>
+                                {showNotifDropdown && (
+                                    <>
+                                        <motion.div 
+                                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                                            onClick={() => setShowNotifDropdown(false)}
+                                            style={{ position: 'fixed', inset: 0, zIndex: 998 }}
+                                        />
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                                            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                            style={{
+                                                position: 'absolute', top: '100%', right: 0, width: '320px', 
+                                                background: 'var(--surface)', border: '1px solid var(--border)',
+                                                borderRadius: '20px', boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
+                                                zIndex: 999, overflow: 'hidden', marginTop: '10px'
+                                            }}
+                                        >
+                                            <div style={{ padding: '1rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 900 }}>Alerts</h3>
+                                                <div style={{ display: 'flex', gap: '8px' }}>
+                                                    <button onClick={markAllRead} style={{ fontSize: '11px', color: 'var(--primary)', background: 'none', border: 'none', fontWeight: 700, cursor: 'pointer' }}>Mark all</button>
+                                                    <button onClick={clearAll} style={{ fontSize: '11px', color: '#ef4444', background: 'none', border: 'none', fontWeight: 700, cursor: 'pointer' }}>Clear</button>
+                                                </div>
+                                            </div>
+                                            <div style={{ maxHeight: '400px', overflowY: 'auto', padding: '0.5rem' }}>
+                                                {notifications.length === 0 ? (
+                                                    <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>No new alerts.</div>
+                                                ) : (
+                                                    notifications.map(n => (
+                                                        <div 
+                                                            key={n._id} 
+                                                            onClick={() => !n.isRead && markAsRead(n._id)}
+                                                            style={{ 
+                                                                padding: '1rem', borderRadius: '12px', marginBottom: '4px',
+                                                                background: n.isRead ? 'transparent' : 'rgba(var(--primary-rgb), 0.05)',
+                                                                cursor: n.isRead ? 'default' : 'pointer',
+                                                                transition: 'background 0.2s',
+                                                                position: 'relative'
+                                                            }}
+                                                        >
+                                                            <div style={{ display: 'flex', gap: '0.75rem' }}>
+                                                                <div style={{ 
+                                                                    width: 32, height: 32, borderRadius: '10px', 
+                                                                    background: n.type === 'order' ? 'rgba(var(--primary-rgb), 0.1)' : 'rgba(56, 189, 248, 0.1)',
+                                                                    color: n.type === 'order' ? 'var(--primary)' : '#38bdf8',
+                                                                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                                                                }}>
+                                                                    {n.type === 'order' ? <ShoppingCart size={16} /> : <Mail size={16} />}
+                                                                </div>
+                                                                <div>
+                                                                    <div style={{ fontSize: '0.85rem', fontWeight: n.isRead ? 500 : 800, color: 'var(--text-primary)', lineHeight: 1.4 }}>{n.message}</div>
+                                                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>{new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ))
+                                                )}
+                                            </div>
+                                        </motion.div>
+                                    </>
+                                )}
+                            </AnimatePresence>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.5rem 1rem', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '14px' }}>
+                            <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>{user.name[0]}</div>
+                            <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-primary)' }}>{user.name}</span>
+                        </div>
+                    </div>
                     <Outlet />
                 </div>
             </main>
 
+            {/* Notification Toast */}
+            <AnimatePresence>
+                {activeNotification && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                        style={{
+                            position: 'fixed',
+                            bottom: '24px',
+                            right: '24px',
+                            background: 'var(--surface)',
+                            border: '1px solid var(--primary)',
+                            boxShadow: '0 10px 40px -10px rgba(var(--primary-rgb), 0.4)',
+                            padding: '1rem 1.5rem',
+                            borderRadius: '16px',
+                            zIndex: 9999,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '1rem',
+                            maxWidth: '400px'
+                        }}
+                    >
+                        <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(var(--primary-rgb), 0.1)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Bell size={20} style={{ animation: 'ring 2s ease infinite' }} />
+                        </div>
+                        <div>
+                            <div style={{ fontWeight: 800, color: 'var(--text-primary)', marginBottom: '4px' }}>{activeNotification.title}</div>
+                            <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>{activeNotification.message}</div>
+                        </div>
+                        <button onClick={() => setActiveNotification(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '4px', marginLeft: 'auto' }}>
+                            <X size={16} />
+                        </button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             <style>{`
+                @keyframes ring {
+                    0% { transform: rotate(0); }
+                    10% { transform: rotate(15deg); }
+                    20% { transform: rotate(-10deg); }
+                    30% { transform: rotate(10deg); }
+                    40% { transform: rotate(-10deg); }
+                    50% { transform: rotate(0); }
+                    100% { transform: rotate(0); }
+                }
+
                 @media (max-width: 1024px) {
                     .admin-sidebar { display: none !important; }
                     main { 

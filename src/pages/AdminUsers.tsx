@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { MoreHorizontal, Trash2, Edit2, ShieldAlert, ShieldOff, Users2 } from 'lucide-react';
 import axios from 'axios';
+import { showAlert, showConfirm, showError, showToast } from '../utils/alerts';
 
 const AdminUsers = () => {
     const [users, setUsers] = useState<any[]>([]);
@@ -33,22 +34,32 @@ const AdminUsers = () => {
     }, []);
 
     const toggleAdmin = async (id: string, isAdmin: boolean) => {
-        if (!confirm(`Are you sure you want to ${isAdmin ? 'remove admin rights from' : 'grant admin rights to'} this user?`)) return;
+        const result = await showConfirm(
+            isAdmin ? 'Revoke Admin?' : 'Grant Admin?',
+            `Are you sure you want to ${isAdmin ? 'remove admin rights from' : 'grant admin rights to'} this user?`,
+            isAdmin ? 'Revoke Rights' : 'Grant Access'
+        );
+        if (!result.isConfirmed) return;
+        
         try {
             await axios.put(`/api/users/${id}`, { isAdmin: !isAdmin });
             fetchUsers();
+            showToast(`Role updated successfully`);
         } catch (err) {
-            alert('Error updating user role');
+            showError('Update Failed', 'Collision detected in user role modification.');
         }
     };
 
     const deleteUser = async (id: string) => {
-        if (!confirm('Are you sure you want to delete this user? This cannot be undone.')) return;
+        const result = await showConfirm('Exterminate User?', 'This account will be permanently deleted. This action is irreversible.', 'Delete Forever');
+        if (!result.isConfirmed) return;
+        
         try {
             await axios.delete(`/api/users/${id}`);
             setUsers(u => u.filter(user => user._id !== id));
+            showToast('User account removed');
         } catch (err: any) {
-            alert(err.response?.data?.message || 'Error deleting user');
+            showError('Deletion Blocked', err.response?.data?.message || 'Could not delete user account.');
         }
     };
 
@@ -130,8 +141,12 @@ const AdminUsers = () => {
                                     <td style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)', fontWeight: 600 }}>{(currentPage - 1) * pageSize + idx + 1}</td>
                                     <td style={{ padding: '0.75rem 1rem', fontWeight: 600 }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                            <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, var(--primary), var(--secondary))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: '0.9rem', flexShrink: 0 }}>
-                                                {u.name?.[0]?.toUpperCase() || 'U'}
+                                            <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--surface-2)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)', fontWeight: 800, fontSize: '0.9rem', flexShrink: 0, overflow: 'hidden' }}>
+                                                {u.profilePic ? (
+                                                    <img src={u.profilePic} alt={u.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                ) : (
+                                                    <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, var(--primary), var(--secondary))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>{u.name?.[0]?.toUpperCase() || 'U'}</div>
+                                                )}
                                             </div>
                                             {u.name}
                                         </div>

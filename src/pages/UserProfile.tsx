@@ -3,8 +3,9 @@ import {
     User, Mail, Phone, Save, Lock, Eye, EyeOff,
     Trash2, Plus, ShoppingBag, Heart, Shield, ChevronRight,
     Camera, Settings, LogOut, Bell, Sparkles, ChevronLeft,
-    Truck, CreditCard, CheckCircle2, Tag, MapPin
+    Truck, CreditCard, CheckCircle2, Tag, MapPin, Loader2
 } from 'lucide-react';
+import { showSuccess, showError, showConfirm } from '../utils/alerts';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
@@ -38,6 +39,7 @@ const UserProfile = () => {
     const [saving, setSaving] = useState(false);
     const [success, setSuccess] = useState('');
     const [error, setError] = useState('');
+    const [uploading, setUploading] = useState(false);
 
     if (!user) return (
         <div className="container" style={{ padding: '10vh 0', textAlign: 'center' }}>
@@ -62,9 +64,11 @@ const UserProfile = () => {
         try {
             const { data } = await axios.put('/api/users/profile', { name, email, phone, ...(password ? { password } : {}) });
             updateUser(data);
-            setSuccess('Studio profile updated!');
+            showSuccess('Profile Synchronized', 'Your identity details have been successfully updated in the studio vault.');
             setPassword('');
-        } catch (err: any) { setError(err.response?.data?.message || 'Update failed.'); }
+        } catch (err: any) { 
+            showError('Update Failed', err.response?.data?.message || 'An error occurred while attempting to sync your profile.'); 
+        }
         finally { setSaving(false); }
     };
 
@@ -76,20 +80,54 @@ const UserProfile = () => {
             updateUser(data);
             setAddresses(data.addresses);
             setNewAddr({ address: '', city: '', postalCode: '', country: 'Srilanka' });
-            setSuccess('Address added to vault.');
-        } catch (err: any) { setError('Failed to add address'); }
+            showSuccess('Location Established', 'The new shipping destination has been added to your secure vault.');
+        } catch (err: any) { 
+            showError('Vault Error', 'Failed to synchronize the new address with your profile.'); 
+        }
         finally { setSaving(false); }
     };
 
     const deleteAddress = async (id: string) => {
-        setError(''); setSuccess('');
+        const confirmed = await showConfirm('Remove Location?', 'Are you sure you want to delete this shipping destination?');
+        if (!confirmed) return;
+
         const updated = addresses.filter((a: any) => a._id !== id);
         try {
             const { data } = await axios.put('/api/users/profile', { addresses: updated });
             updateUser(data);
             setAddresses(data.addresses);
-            setSuccess('Address removed.');
-        } catch { setError('Failed to remove address'); }
+            showSuccess('Location Removed', 'The shipping destination has been purged from your vault.');
+        } catch { 
+            showError('Purge Failed', 'An error occurred while attempting to remove the address.'); 
+        }
+    };
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('image', file);
+
+        setUploading(true);
+        setError('');
+        setSuccess('');
+
+        try {
+            // Upload to Cloudinary via our backend
+            const { data: uploadData } = await axios.post('/api/upload/profile', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
+            // Update user profile with new image URL
+            const { data: userData } = await axios.put('/api/users/profile', { profilePic: uploadData.imageUrl });
+            updateUser(userData);
+            showSuccess('Portrait Updated', 'Your new studio portrait has been successfully uploaded.');
+        } catch (err: any) {
+            showError('Upload Failed', err.response?.data?.message || 'Failed to transmit the image to the studio vault.');
+        } finally {
+            setUploading(false);
+        }
     };
 
     useEffect(() => {
@@ -153,8 +191,19 @@ const UserProfile = () => {
                             }}>
                                 {user.profilePic ? <img src={user.profilePic} style={{ width: '100%', height: '100%', borderRadius: '36px', objectFit: 'cover' }} /> : initials}
                             </div>
-                            <button style={{ position: 'absolute', bottom: '-5px', right: '-5px', background: 'var(--primary)', color: 'white', border: '3px solid var(--surface)', borderRadius: '15px', padding: '0.5rem' }}>
-                                <Camera size={16} />
+                            <input
+                                type="file"
+                                id="profile-upload"
+                                hidden
+                                accept="image/*"
+                                onChange={handleImageUpload}
+                            />
+                            <button 
+                                onClick={() => document.getElementById('profile-upload')?.click()}
+                                disabled={uploading}
+                                style={{ position: 'absolute', bottom: '-5px', right: '-5px', background: 'var(--primary)', color: 'white', border: '3px solid var(--surface)', borderRadius: '15px', padding: '0.5rem', cursor: 'pointer' }}
+                            >
+                                {uploading ? <Loader2 size={16} className="animate-spin" /> : <Camera size={16} />}
                             </button>
                         </div>
                         <div style={{ color: 'white' }}>
@@ -493,23 +542,7 @@ const UserProfile = () => {
                                     )}
                                 </AnimatePresence>
 
-                                {(success || error) && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        style={{
-                                            marginTop: '2rem',
-                                            padding: '1rem 1.5rem',
-                                            borderRadius: '16px',
-                                            background: success ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
-                                            color: success ? '#4ade80' : '#f87171',
-                                            fontWeight: 700,
-                                            border: `1px solid ${success ? '#4ade80' : '#f87171'}`
-                                        }}
-                                    >
-                                        {success || error}
-                                    </motion.div>
-                                )}
+                                    {/* Alert system replaced by SweetAlert2 */}
                             </motion.div>
                         </div>
                     </main>

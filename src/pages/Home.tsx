@@ -7,6 +7,8 @@ import {
     Send, MapPin, Phone, Mail, MessageSquare, Clock
 } from 'lucide-react';
 import axios from 'axios';
+import { useAuth } from '../contexts/AuthContext';
+import { showSuccess, showError } from '../utils/alerts';
 
 const HERO_SLIDES = [
     {
@@ -71,6 +73,7 @@ const ProductCard = ({ product, style }: { product: any, style?: React.CSSProper
 );
 
 const Home = () => {
+    const { user } = useAuth();
     const [products, setProducts] = useState<any[]>([]);
     const [categories, setCategories] = useState<any[]>([]);
     const [heroIdx, setHeroIdx] = useState(0);
@@ -124,16 +127,27 @@ const Home = () => {
         return () => clearInterval(timer);
     }, []);
 
-    const handleContactSubmit = (e: React.FormEvent) => {
+    const handleContactSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        
+        if (!user) {
+            showError('Studio Access Required', 'Please sign in to your profile to transmit a message to our curators.');
+            return;
+        }
+
         setSending(true);
-        // Simulate API call
-        setTimeout(() => {
-            setSending(false);
+        try {
+            await axios.post('/api/contact', contactForm);
             setSent(true);
+            showSuccess('Message Transmitted', 'Your inquiry has been broadcasted to our team. We will respond shortly.');
             setContactForm({ name: '', email: '', message: '' });
             setTimeout(() => setSent(false), 5000);
-        }, 1500);
+        } catch (error) {
+            console.error('Failed to send contact message:', error);
+            showError('Transmission Interrupted', 'Failed to send your message. Please verify your connection and try again.');
+        } finally {
+            setSending(false);
+        }
     };
 
     const hero = HERO_SLIDES[heroIdx];

@@ -1,11 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import { MoreHorizontal, Search, Filter, RefreshCw, Check, XCircle, Truck, Package, Eye, X } from 'lucide-react';
+import { Search, Filter, Plus, Pencil, Trash2, X, Save, Image as ImageIcon, MoreHorizontal, Star, Eye, Upload, CloudLightning, Info, Layout, Tag, DollarSign, Box, Check, XCircle, Truck, Package, FileText, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { showError, showToast } from '../utils/alerts';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
-const STATUS_OPTIONS = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
+const ALL_STATUSES = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
+
+// Which statuses are permitted from a given current status
+const ALLOWED_TRANSITIONS: Record<string, string[]> = {
+    pending:    ['confirmed', 'processing', 'shipped', 'cancelled'],
+    confirmed:  ['processing', 'shipped', 'cancelled'],
+    processing: ['shipped', 'cancelled'],                 // cannot go back to pending/confirmed, must ship before delivery
+    shipped:    ['delivered', 'cancelled'],               // cannot go back to processing/pending
+    delivered:  [],                                       // terminal — nothing allowed
+    cancelled:  [],                                       // terminal — nothing allowed
+};
+
 const STATUS_COLORS: Record<string, string> = {
     pending: 'badge-secondary',
+    confirmed: 'badge-warning',
     processing: 'badge-primary',
     shipped: 'badge-info',
     delivered: 'badge-success',
@@ -29,13 +42,29 @@ const AdminOrders = () => {
     // Pagination State
     const [pageSize, setPageSize] = useState(10);
     const [currentPage, setCurrentPage] = useState(1);
+    const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+
+    const navigate = useNavigate();
+    const location = useLocation();
 
     const fetchOrders = () => {
         setLoading(true);
         axios.get('/api/orders').then(r => setOrders(r.data)).catch(() => setOrders([])).finally(() => setLoading(false));
     };
 
-    useEffect(() => { fetchOrders(); }, []);
+    useEffect(() => { 
+        fetchOrders(); 
+
+        // Listen for real-time "instant" refresh signal from AdminLayout
+        const handleRefresh = (e: any) => {
+            if (e.detail?.type === 'order' || !e.detail?.type) {
+                fetchOrders();
+            }
+        };
+
+        window.addEventListener('admin-data-refresh', handleRefresh);
+        return () => window.removeEventListener('admin-data-refresh', handleRefresh);
+    }, []);
 
     useEffect(() => {
         const handler = () => setOpenMenuId(null);
@@ -61,9 +90,13 @@ const AdminOrders = () => {
         try {
             await axios.put(`/api/orders/${id}/status`, { status, trackingId, notes: note });
             setOrders(os => os.map(o => o._id === id ? { ...o, status, trackingId } : o));
-            setTrackingModal(null);
+            if (selectedOrder?._id === id) {
+                setSelectedOrder((prev: any) => ({ ...prev, status, trackingId }));
+            }
+            fetchOrders();
+            showToast('Order status updated');
         } catch (err) {
-            alert('Failed to update order status');
+            showError('Update Error', 'Failed to update order status');
         } finally {
             setSaving(false);
         }
@@ -122,7 +155,7 @@ const AdminOrders = () => {
                     boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
                     background: 'var(--surface)'
                 }}>
-                    <RefreshCw size={18} /> Sync Orders
+                    <RefreshCw size={18} /> Refresh Orders
                 </button>
             </div>
 
@@ -153,7 +186,7 @@ const AdminOrders = () => {
                     <Filter size={16} color="var(--text-muted)" />
                     <select className="input" value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{ width: '100%', minWidth: '150px', borderRadius: '16px' }}>
                         <option value="all">All Statuses</option>
-                        {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+                        {ALL_STATUSES.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
                     </select>
                 </div>
             </div>
@@ -241,17 +274,35 @@ const AdminOrders = () => {
                                                     padding: '0.5rem'
                                                 }}>
                                                 <div style={{ padding: '0.4rem' }}>
-                                                    <Link to={`/orders/${o._id}`} className="btn btn-ghost btn-sm btn-full" style={{ justifyContent: 'flex-start', gap: '0.5rem', textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+                                                    <button onClick={() => { setSelectedOrder(o); setOpenMenuId(null); navigate(`?view=${o._id}`); }} className="btn btn-ghost btn-sm btn-full" style={{ justifyContent: 'flex-start', gap: '0.5rem', textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
                                                         <Eye size={14} /> View Details
-                                                    </Link>
+                                                    </button>
                                                     <div style={{ borderTop: '1px solid var(--border)', margin: '0.4rem 0' }} />
                                                     <div style={{ padding: '0.25rem 0.5rem', fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Update Status</div>
-                                                    {STATUS_OPTIONS.filter(s => s !== o.status).map(s => (
-                                                        <button key={s} onClick={() => handleStatusClick(o._id, s)} className="btn btn-ghost btn-sm btn-full" style={{ justifyContent: 'flex-start', gap: '0.5rem', textTransform: 'capitalize', color: s === 'cancelled' ? 'var(--error)' : 'var(--text-primary)' }}>
-                                                            {s === 'delivered' ? <Check size={14} /> : s === 'cancelled' ? <XCircle size={14} /> : s === 'shipped' ? <Truck size={14} /> : <Package size={14} />}
-                                                            {s === 'shipped' ? '📦 Shipped (Tracking required)' : s}
-                                                        </button>
-                                                    ))}
+                                                    {ALL_STATUSES.filter(s => s !== o.status).map(s => {
+                                                        const allowed = (ALLOWED_TRANSITIONS[o.status] || []).includes(s);
+                                                        return (
+                                                            <button
+                                                                key={s}
+                                                                onClick={() => allowed && handleStatusClick(o._id, s)}
+                                                                className="btn btn-ghost btn-sm btn-full"
+                                                                disabled={!allowed}
+                                                                title={!allowed ? `Cannot move from "${o.status}" to "${s}"` : ''}
+                                                                style={{
+                                                                    justifyContent: 'flex-start',
+                                                                    gap: '0.5rem',
+                                                                    textTransform: 'capitalize',
+                                                                    color: !allowed ? 'var(--text-muted)' : s === 'cancelled' ? 'var(--error)' : 'var(--text-primary)',
+                                                                    opacity: !allowed ? 0.4 : 1,
+                                                                    cursor: !allowed ? 'not-allowed' : 'pointer',
+                                                                }}
+                                                            >
+                                                                {s === 'delivered' ? <Check size={14} /> : s === 'cancelled' ? <XCircle size={14} /> : s === 'shipped' ? <Truck size={14} /> : <Package size={14} />}
+                                                                {s === 'shipped' ? '📦 Shipped (Tracking required)' : s}
+                                                                {!allowed && <span style={{ marginLeft: 'auto', fontSize: '0.65rem', color: 'var(--error)' }}>locked</span>}
+                                                            </button>
+                                                        );
+                                                    })}
                                                 </div>
                                             </div>
                                         )}
@@ -324,6 +375,104 @@ const AdminOrders = () => {
                 </div>
             </div>
 
+            {/* View Details Modal */}
+            {selectedOrder && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(5px)', zIndex: 4000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: window.innerWidth < 640 ? '0.5rem' : '1.5rem' }}>
+                    <div style={{ background: 'var(--surface)', borderRadius: window.innerWidth < 640 ? '16px' : '28px', width: '100%', maxWidth: '800px', maxHeight: '95vh', overflowY: 'auto', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)', border: '1px solid var(--border)' }}>
+                        <div style={{ padding: window.innerWidth < 640 ? '1.25rem' : '1.5rem 2rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--surface-2)', position: 'sticky', top: 0, zIndex: 10 }}>
+                            <div>
+                                <h3 style={{ fontWeight: 900, fontSize: window.innerWidth < 640 ? '1.25rem' : '1.5rem', letterSpacing: '-0.5px' }}>Order Details</h3>
+                                <p style={{ color: 'var(--primary)', fontWeight: 700, margin: 0, fontSize: window.innerWidth < 640 ? '0.8rem' : '1rem' }}>#{selectedOrder._id.toUpperCase()}</p>
+                            </div>
+                            <button onClick={() => { setSelectedOrder(null); navigate(location.pathname, { replace: true }); }} className="btn-ghost-admin" style={{ width: '40px', height: '40px', borderRadius: '12px' }}><X size={24} /></button>
+                        </div>
+
+                        <div style={{ padding: window.innerWidth < 640 ? '1.25rem' : '2rem' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : 'repeat(2, 1fr)', gap: '1.5rem' }}>
+                                {/* User Details Section */}
+                                <div style={{ background: 'var(--surface-2)', padding: '1.25rem', borderRadius: '20px', border: '1px solid var(--border)' }}>
+                                    <h4 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1rem', fontWeight: 800, textTransform: 'uppercase', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                                        <FileText size={14} className="text-primary" /> Order Details Overview
+                                    </h4>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                        <div>
+                                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>Full Name</div>
+                                            <div style={{ fontWeight: 700, fontSize: '1rem' }}>{selectedOrder.user?.name || 'Guest'}</div>
+                                        </div>
+                                        <div>
+                                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>Email Address</div>
+                                            <a href={`mailto:${selectedOrder.user?.email}`} style={{ color: 'var(--primary)', fontWeight: 600, textDecoration: 'none', wordBreak: 'break-all', fontSize: '0.9rem' }}>{selectedOrder.user?.email || 'N/A'}</a>
+                                        </div>
+                                        <div>
+                                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>Account Status</div>
+                                            <div style={{ display: 'inline-block', padding: '2px 8px', borderRadius: '6px', background: 'rgba(var(--success-rgb), 0.1)', color: 'var(--success)', fontSize: '0.65rem', fontWeight: 800 }}>ACTIVE USER</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Order Summary Section */}
+                                <div style={{ background: 'var(--surface-2)', padding: '1.25rem', borderRadius: '20px', border: '1px solid var(--border)' }}>
+                                    <h4 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1rem', fontWeight: 800, textTransform: 'uppercase', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                                        <Package size={14} /> Fulfillment State
+                                    </h4>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                        <div>
+                                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>Current Status</div>
+                                            <span className={`badge ${STATUS_COLORS[selectedOrder.status]}`} style={{ textTransform: 'uppercase', fontWeight: 900, fontSize: '0.7rem' }}>{selectedOrder.status}</span>
+                                        </div>
+                                        <div>
+                                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>Payment Method</div>
+                                            <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{selectedOrder.paymentMethod} ({selectedOrder.isPaid ? 'PAID' : 'PENDING'})</div>
+                                        </div>
+                                        <div>
+                                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>Tracking ID</div>
+                                            <div style={{ fontWeight: 700, fontSize: '0.9rem', color: selectedOrder.trackingId ? 'var(--text-primary)' : 'var(--text-muted)' }}>{selectedOrder.trackingId || 'Not yet assigned'}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style={{ marginTop: '2rem' }}>
+                                <h4 style={{ fontWeight: 800, textTransform: 'uppercase', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>Order Manifest</h4>
+                                <div style={{ borderRadius: '16px', border: '1px solid var(--border)', overflow: 'hidden' }}>
+                                    {selectedOrder.orderItems?.map((item: any, idx: number) => (
+                                        <div key={idx} style={{ padding: '1rem', borderBottom: idx === selectedOrder.orderItems.length - 1 ? 'none' : '1px solid var(--border)', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                            <img src={item.image} alt={item.name} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '8px' }} />
+                                            <div style={{ flex: 1 }}>
+                                                <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{item.name}</div>
+                                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Qty: {item.qty} × LKR {item.price}</div>
+                                            </div>
+                                            <div style={{ fontWeight: 800, fontSize: '0.9rem' }}>LKR {item.qty * item.price}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div style={{ marginTop: '1rem', textAlign: 'right', padding: '0.5rem 1rem' }}>
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>Total Value</div>
+                                    <div style={{ fontSize: window.innerWidth < 640 ? '1.25rem' : '1.5rem', fontWeight: 900, color: 'var(--primary)' }}>LKR {selectedOrder.totalPrice}</div>
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: window.innerWidth < 640 ? 'column' : 'row', gap: '1rem', marginTop: '2rem' }}>
+                                <button
+                                    onClick={() => handleStatusClick(selectedOrder._id, 'confirmed')}
+                                    disabled={!(ALLOWED_TRANSITIONS[selectedOrder.status] || []).includes('confirmed')}
+                                    className="btn btn-primary" style={{ flex: 1, padding: '0.75rem' }}
+                                >
+                                    Confirm Order
+                                </button>
+                                <button
+                                    onClick={() => handleStatusClick(selectedOrder._id, 'shipped')}
+                                    disabled={!(ALLOWED_TRANSITIONS[selectedOrder.status] || []).includes('shipped')}
+                                    className="btn btn-secondary" style={{ flex: 1, padding: '0.75rem' }}
+                                >
+                                    Fulfill & Ship
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+            
             {/* Tracking ID Modal */}
             {trackingModal && (
                 <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>

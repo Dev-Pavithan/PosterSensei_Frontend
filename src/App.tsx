@@ -20,11 +20,12 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminProducts from './pages/AdminProducts';
 import AdminOrders from './pages/AdminOrders';
 import AdminUsers from './pages/AdminUsers';
+import AdminContact from './pages/AdminContact';
 import './index.css';
 import axios from 'axios';
 
 axios.defaults.withCredentials = true;
-// axios.defaults.baseURL = 'https://poster-sensei-backend.vercel.app';
+axios.defaults.baseURL = 'https://poster-sensei-backend.vercel.app';
 
 import { ThemeProvider } from './contexts/ThemeContext';
 
@@ -76,6 +77,7 @@ const App = () => {
                 <Route path="products" element={<AdminProducts />} />
                 <Route path="orders" element={<AdminOrders />} />
                 <Route path="users" element={<AdminUsers />} />
+                <Route path="contact" element={<AdminContact />} />
               </Route>
 
               {/* Customer Routes */}

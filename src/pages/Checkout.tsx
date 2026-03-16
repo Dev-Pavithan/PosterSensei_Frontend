@@ -4,6 +4,7 @@ import { MapPin, Truck, Home, CheckCircle2, ChevronRight } from 'lucide-react';
 import axios from 'axios';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
+import { showSuccess, showError } from '../utils/alerts';
 
 const STEPS = ['Address', 'Delivery', 'Review & Pay'];
 
@@ -35,17 +36,18 @@ const Checkout = () => {
     );
 
     const handlePlaceOrder = async () => {
-        setLoading(true); setError('');
+        setLoading(true);
         try {
             const orderItems = items.map(i => ({ title: i.title, qty: i.qty, image: i.imageUrl, price: i.price, size: i.size, product: i._id }));
             const { data } = await axios.post('/api/orders', {
                 orderItems, shippingAddress: address, deliveryMethod, paymentMethod, totalPrice: total,
                 discount, couponCode: coupon?.code || '',
             }, { withCredentials: true });
+            showSuccess('Order Transmitted', 'Your creative acquisition has been registered. Redirecting to status...');
             clearCart();
             navigate(`/orders/${data._id}`);
         } catch (err: any) {
-            setError(err.response?.data?.message || 'Failed to place order. Please try again.');
+            showError('Transmission Failed', err.response?.data?.message || 'Failed to place order. Please verify your connection.');
         } finally {
             setLoading(false);
         }
@@ -151,7 +153,6 @@ const Checkout = () => {
                                 <div>📍 {address.address}, {address.city} - {address.postalCode}</div>
                                 <div style={{ marginTop: '0.3rem' }}>🚚 {deliveryMethod === 'post' ? 'Standard Post' : 'Room Makeover Service'} · 💳 {paymentMethod}</div>
                             </div>
-                            {error && <div className="alert alert-error" style={{ marginTop: '1rem' }}>{error}</div>}
                             <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
                                 <button onClick={() => setStep(1)} className="btn btn-ghost" style={{ border: '1px solid var(--border)', flex: 1 }}>Back</button>
                                 <button onClick={handlePlaceOrder} disabled={loading} className="btn btn-primary btn-lg" style={{ flex: 2, background: 'linear-gradient(90deg, var(--primary), var(--secondary))' }}>

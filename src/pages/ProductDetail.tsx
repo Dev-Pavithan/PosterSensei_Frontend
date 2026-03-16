@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ShoppingCart, Heart, Star, Truck, Shield, Package, ChevronLeft, Plus, Minus } from 'lucide-react';
 import axios from 'axios';
+import { showError, showSuccess } from '../utils/alerts';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -209,12 +210,12 @@ const ProductDetail = () => {
                             <button onClick={async () => {
                                 try {
                                     await axios.post(`/api/products/${id}/reviews`, review);
-                                    alert('Review submitted!');
+                                    showSuccess('Review Published', 'Thank you for your feedback! Your review has been added.');
                                     setReview({ rating: 5, comment: '' });
                                     // reload
                                     window.location.reload();
                                 } catch (err) {
-                                    alert('Failed to submit review. You may have already reviewed this product.');
+                                    showError('Action Blocked', 'Failed to submit review. You may have already reviewed this product or must be a verified buyer.');
                                 }
                             }} className="btn btn-primary">Submit Review</button>
                         </div>
