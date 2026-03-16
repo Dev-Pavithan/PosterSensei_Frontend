@@ -87,10 +87,7 @@ const Home = () => {
     const [sent, setSent] = useState(false);
 
     const CAT_STYLES: Record<string, { img: string; color: string }> = {
-        'Dragon Ball Z': { img: 'https://images.unsplash.com/photo-1578339851080-33332db8a49c?w=400&auto=format&fit=crop&q=80', color: '#F59E0B' },
-        'Attack on Titan': { img: 'https://images.unsplash.com/photo-1541562232579-512a21360020?w=400&auto=format&fit=crop&q=80', color: '#7C3AED' },
-        'One Piece': { img: 'https://images.unsplash.com/photo-1560807707-8cc77767d783?w=400&auto=format&fit=crop&q=80', color: '#EF4444' },
-        'Demon Slayer': { img: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&auto=format&fit=crop&q=80', color: '#10B981' },
+       
     };
 
     useEffect(() => {
