@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { 
     ArrowRight, Zap, Star, TrendingUp, ShoppingBag, ChevronRight, 
-    Sparkles, MoveUpRight, Layers, Layout, Palette, Heart
+    Sparkles, MoveUpRight, Layers, Layout, Palette, Heart,
+    Send, MapPin, Phone, Mail, MessageSquare, Clock
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -74,7 +75,13 @@ const Home = () => {
     const [categories, setCategories] = useState<any[]>([]);
     const [heroIdx, setHeroIdx] = useState(0);
     const [loading, setLoading] = useState(true);
-    const containerRef = useRef(null);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const contactRef = useRef<HTMLElement>(null);
+
+    // Contact Form State
+    const [contactForm, setContactForm] = useState({ name: '', email: '', message: '' });
+    const [sending, setSending] = useState(false);
+    const [sent, setSent] = useState(false);
 
     const CAT_STYLES: Record<string, { img: string; color: string }> = {
         'Dragon Ball Z': { img: 'https://images.unsplash.com/photo-1578339851080-33332db8a49c?w=400&auto=format&fit=crop&q=80', color: '#F59E0B' },
@@ -103,8 +110,31 @@ const Home = () => {
         }).finally(() => setLoading(false));
 
         const timer = setInterval(() => setHeroIdx(i => (i + 1) % HERO_SLIDES.length), 8000);
+
+        // Handle state-based scroll (replaces hash scroll)
+        const location = window.history.state?.usr;
+        if (location?.scrollTo === 'contact') {
+            setTimeout(() => {
+                contactRef.current?.scrollIntoView({ behavior: 'smooth' });
+                // Clean up state to prevent scrolling on refresh
+                window.history.replaceState({}, document.title);
+            }, 500);
+        }
+
         return () => clearInterval(timer);
     }, []);
+
+    const handleContactSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        setSending(true);
+        // Simulate API call
+        setTimeout(() => {
+            setSending(false);
+            setSent(true);
+            setContactForm({ name: '', email: '', message: '' });
+            setTimeout(() => setSent(false), 5000);
+        }, 1500);
+    };
 
     const hero = HERO_SLIDES[heroIdx];
 
@@ -459,7 +489,13 @@ const Home = () => {
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}><Palette size={20} color="var(--primary)" /> Theme Design</div>
                                 </div>
                                 <div style={{ marginTop: '4rem' }}>
-                                    <Link to="/contact" className="btn btn-primary btn-lg" style={{ borderRadius: '100px', background: 'white', color: 'black' }}>Book Your Session</Link>
+                                    <button 
+                                        onClick={() => contactRef.current?.scrollIntoView({ behavior: 'smooth' })}
+                                        className="btn btn-primary btn-lg" 
+                                        style={{ borderRadius: '100px', background: 'white', color: 'black' }}
+                                    >
+                                        Book Your Session
+                                    </button>
                                 </div>
                             </div>
                             <div style={{ flex: '1 1 500px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', padding: '2rem' }}>
@@ -471,6 +507,108 @@ const Home = () => {
                                 ))}
                             </div>
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* CONTACT US: Interactive UI */}
+            <section ref={contactRef} id="contact" style={{ paddingBlock: '10vw', position: 'relative', overflow: 'hidden' }}>
+                <div style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: '100%',
+                    height: '100%',
+                    background: 'radial-gradient(circle at 50% 50%, rgba(var(--primary-rgb), 0.15) 0%, transparent 70%)',
+                    zIndex: 0
+                }} />
+
+                <div className="container" style={{ position: 'relative', zIndex: 10 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '4rem', alignItems: 'center' }}>
+                        <div>
+                            <div style={{ fontSize: '0.8rem', fontWeight: 900, color: 'var(--primary)', letterSpacing: '0.4em', marginBottom: '1.5rem' }}>GET IN TOUCH</div>
+                            <h2 style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 900, lineHeight: 1.1, marginBottom: '2rem' }}>Let's Start Your Transformation.</h2>
+                            <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '3rem' }}>
+                                Have a specific project in mind? Our creative leads are ready to discuss your custom prints or full-scale room makeovers.
+                            </p>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                                {[
+                                    { icon: <Mail size={24} />, label: 'Email Us', content: 'postersenseianime@gmail.com' },
+                                    { icon: <Phone size={24} />, label: 'Call Directly', content: '+94 75 042 9863' },
+                                ].map((item, i) => (
+                                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+                                        <div style={{ background: 'rgba(var(--primary-rgb), 0.1)', padding: '0.75rem', borderRadius: '16px', color: 'var(--primary)' }}>
+                                            {item.icon}
+                                        </div>
+                                        <div>
+                                            <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>{item.label}</div>
+                                            <div style={{ fontWeight: 700 }}>{item.content}</div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <motion.div 
+                            initial={{ opacity: 0, y: 30 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            style={{ 
+                                background: 'rgba(255, 255, 255, 0.03)', 
+                                backdropFilter: 'blur(30px)', 
+                                padding: '3.5rem', 
+                                borderRadius: '40px', 
+                                border: '1px solid rgba(255, 255, 255, 0.08)',
+                                boxShadow: 'var(--shadow-2xl)'
+                            }}
+                        >
+                            <form onSubmit={handleContactSubmit}>
+                                <div style={{ display: 'grid', gap: '1.5rem', marginBottom: '2rem' }}>
+                                    <div className="input-group">
+                                        <label style={{ fontSize: '0.75rem', fontWeight: 800, opacity: 0.6, marginBottom: '0.75rem', display: 'block' }}>YOUR NAME</label>
+                                        <input 
+                                            className="input studio-input" 
+                                            placeholder="Shourya Khanna"
+                                            value={contactForm.name}
+                                            onChange={e => setContactForm({ ...contactForm, name: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="input-group">
+                                        <label style={{ fontSize: '0.75rem', fontWeight: 800, opacity: 0.6, marginBottom: '0.75rem', display: 'block' }}>EMAIL ADDRESS</label>
+                                        <input 
+                                            type="email"
+                                            className="input studio-input" 
+                                            placeholder="hello@example.com"
+                                            value={contactForm.email}
+                                            onChange={e => setContactForm({ ...contactForm, email: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="input-group">
+                                        <label style={{ fontSize: '0.75rem', fontWeight: 800, opacity: 0.6, marginBottom: '0.75rem', display: 'block' }}>PROJECT BRIEF</label>
+                                        <textarea 
+                                            className="input studio-input" 
+                                            placeholder="Tell us about your space..."
+                                            style={{ minHeight: '150px', resize: 'none' }}
+                                            value={contactForm.message}
+                                            onChange={e => setContactForm({ ...contactForm, message: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                                <button type="submit" disabled={sending || sent} className="btn btn-primary btn-lg rounded-pill" style={{ width: '100%', height: '60px' }}>
+                                    {sending ? 'Transmitting...' : sent ? 'Request Received ✓' : 'Send Message'}
+                                </button>
+                                {sent && (
+                                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ textAlign: 'center', marginTop: '1rem', color: '#4ade80', fontWeight: 700, fontSize: '0.9rem' }}>
+                                        Our studio will reach out to you within 24 hours.
+                                    </motion.p>
+                                )}
+                            </form>
+                        </motion.div>
                     </div>
                 </div>
             </section>

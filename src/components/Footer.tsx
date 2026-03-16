@@ -89,18 +89,19 @@ const Footer = () => {
                         ['About Us', '/about'],
                         ['Store Locations', '/shop'],
                         ['Room Makeover', '/shop'],
+                        ['Contact Us', '/', { scrollTo: 'contact' }],
                         ['Terms & Policies', '/']
-                    ].map(([label, to]) => (
-                        <Link key={label} to={to} style={{ display: 'block', color: '#9ca3af', fontSize: '0.875rem', marginBottom: '0.5rem', transition: 'color var(--transition)' }}
+                    ].map(([label, to, state], i) => (
+                        <Link key={i} to={to as string} state={state as object} style={{ display: 'block', color: '#9ca3af', fontSize: '0.875rem', marginBottom: '0.5rem', transition: 'color var(--transition)' }}
                             onMouseEnter={e => e.currentTarget.style.color = 'var(--primary)'}
-                            onMouseLeave={e => e.currentTarget.style.color = '#9ca3af'}>{label}</Link>
+                            onMouseLeave={e => e.currentTarget.style.color = '#9ca3af'}>{label as string}</Link>
                     ))}
                 </div>
 
                 {/* Account links */}
                 <div className="footer-links">
                     <div style={{ fontWeight: 700, marginBottom: '1rem', color: 'white' }}>My Account</div>
-                    {[['My Profile', '/profile'], ['My Orders', '/orders'], ['Wishlist', '/wishlist'], ['Cart', '/cart']].map(([label, to]) => (
+                    {[['My Profile', '/profile'], ['My Orders', '/profile'], ['Wishlist', '/profile'], ['Cart', '/cart']].map(([label, to]) => (
                         <Link key={label} to={to} style={{ display: 'block', color: '#9ca3af', fontSize: '0.875rem', marginBottom: '0.5rem', transition: 'color var(--transition)' }}
                             onMouseEnter={e => e.currentTarget.style.color = 'var(--primary)'}
                             onMouseLeave={e => e.currentTarget.style.color = '#9ca3af'}>{label}</Link>

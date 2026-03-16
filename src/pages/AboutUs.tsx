@@ -328,7 +328,7 @@ const AboutUs = () => {
                         </h2>
                         <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
                             <Link to="/shop" className="btn btn-primary btn-lg" style={{ borderRadius: '100px', background: 'white', color: 'black' }}>Visit Gallery</Link>
-                            <Link to="/contact" className="btn btn-outline btn-lg" style={{ borderRadius: '100px', borderColor: 'white', color: 'white' }}>Start Project</Link>
+                            <Link to="/" state={{ scrollTo: 'contact' }} className="btn btn-outline btn-lg" style={{ borderRadius: '100px', borderColor: 'white', color: 'white' }}>Start Project</Link>
                         </div>
                         
                         {/* Interactive Social links */}

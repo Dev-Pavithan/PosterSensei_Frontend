@@ -229,10 +229,8 @@ const Header = () => {
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginBottom: '0.75rem' }}>
                                             {[
                                                 { icon: <ShoppingCart size={18} />, label: 'My Cart', to: '/cart', count: totalItems },
-                                                { icon: <Heart size={18} />, label: 'Wishlist', to: '/wishlist', count: wishlistCount },
                                                 ...(user ? [
                                                     { icon: <User size={18} />, label: 'Profile Settings', to: '/profile' },
-                                                    { icon: <Package size={18} />, label: 'Order History', to: '/orders' }
                                                 ] : [])
                                             ].map(item => (
                                                 <Link key={item.to} to={item.to} onClick={() => setShowUserMenu(false)}
@@ -473,10 +471,8 @@ const Header = () => {
                     <div style={{ padding: '1rem', maxHeight: '60vh', overflowY: 'auto' }}>
                         {[
                             { icon: <ShoppingCart size={20} />, label: 'My Cart', to: '/cart', count: totalItems },
-                            { icon: <Heart size={20} />, label: 'Wishlist', to: '/wishlist', count: wishlistCount },
                             ...(user ? [
                                 { icon: <User size={20} />, label: 'Profile', to: '/profile' },
-                                { icon: <Package size={20} />, label: 'Orders', to: '/orders' }
                             ] : [])
                         ].map(item => (
                             <Link key={item.to} to={item.to} onClick={() => setShowUserMenu(false)}

@@ -1,17 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import {
-    User, Mail, Phone, Save, Lock, Eye, EyeOff, MapPin,
+    User, Mail, Phone, Save, Lock, Eye, EyeOff,
     Trash2, Plus, ShoppingBag, Heart, Shield, ChevronRight,
-    Camera, Settings, LogOut, Bell, Sparkles
+    Camera, Settings, LogOut, Bell, Sparkles, ChevronLeft,
+    Truck, CreditCard, CheckCircle2, Tag, MapPin
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
+import { useCart } from '../contexts/CartContext';
+import { useWishlist } from '../contexts/WishlistContext';
 import { Link } from 'react-router-dom';
 
 const UserProfile = () => {
     const { user, updateUser, logout } = useAuth();
-    const [tab, setTab] = useState<'profile' | 'security' | 'addresses'>('profile');
+    const { addItem } = useCart();
+    const { wishlist, toggleWishlist, loading: loadingWishlist } = useWishlist();
+    const [tab, setTab] = useState<'profile' | 'security' | 'addresses' | 'orders' | 'wishlist'>('profile');
+    const [orders, setOrders] = useState<any[]>([]);
+    const [loadingOrders, setLoadingOrders] = useState(false);
+    const [selectedOrder, setSelectedOrder] = useState<any>(null);
+    const [loadingOrderDetail, setLoadingOrderDetail] = useState(false);
 
     // Profile state
     const [name, setName] = useState(user?.name || '');
@@ -41,7 +50,12 @@ const UserProfile = () => {
         </div>
     );
 
-    const handleSwitchTab = (id: any) => { setTab(id); setError(''); setSuccess(''); };
+    const handleSwitchTab = (id: any) => { 
+        setTab(id); 
+        setError(''); 
+        setSuccess(''); 
+        setSelectedOrder(null); 
+    };
 
     const handleProfileUpdate = async (e: React.FormEvent) => {
         e.preventDefault(); setSaving(true); setError(''); setSuccess('');
@@ -78,10 +92,32 @@ const UserProfile = () => {
         } catch { setError('Failed to remove address'); }
     };
 
+    useEffect(() => {
+        if (tab === 'orders' && user && !selectedOrder) {
+            setLoadingOrders(true);
+            axios.get('/api/orders/myorders')
+                .then(r => setOrders(r.data))
+                .catch(() => setOrders([]))
+                .finally(() => setLoadingOrders(false));
+        }
+    }, [tab, user, selectedOrder]);
+
+    const fetchOrderDetail = (id: string) => {
+        setLoadingOrderDetail(true);
+        axios.get(`/api/orders/${id}`)
+            .then(r => setSelectedOrder(r.data))
+            .catch(() => setSelectedOrder(null))
+            .finally(() => setLoadingOrderDetail(false));
+    };
+
+    const statusClass = (s: string) => `badge status-${s}`;
+
     const initials = name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
 
     const TABS = [
         { id: 'profile', label: 'Identity', icon: <User size={18} /> },
+        { id: 'orders', label: 'My Orders', icon: <ShoppingBag size={18} /> },
+        { id: 'wishlist', label: 'Curated List', icon: <Heart size={18} /> },
         { id: 'addresses', label: 'Vault', icon: <MapPin size={18} /> },
         { id: 'security', label: 'Defense', icon: <Shield size={18} /> },
     ];
@@ -175,21 +211,6 @@ const UserProfile = () => {
                                 ))}
                             </div>
 
-                            <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', marginBlock: '1.5rem' }} />
-
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                <Link to="/orders" style={{ textDecoration: 'none', color: 'inherit' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem 1.25rem', borderRadius: '20px', fontWeight: 700, opacity: 0.7 }}>
-                                        <ShoppingBag size={18} /> My Orders
-                                    </div>
-                                </Link>
-                                <Link to="/wishlist" style={{ textDecoration: 'none', color: 'inherit' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem 1.25rem', borderRadius: '20px', fontWeight: 700, opacity: 0.7 }}>
-                                        <Heart size={18} /> Curated List
-                                    </div>
-                                </Link>
-                            </div>
-
                             <button onClick={logout} style={{ width: '100%', marginTop: '2rem', display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem 1.25rem', borderRadius: '20px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: 'none', fontWeight: 800, cursor: 'pointer' }}>
                                 <LogOut size={18} /> Terminate Session
                             </button>
@@ -199,60 +220,6 @@ const UserProfile = () => {
                     {/* CONTENT BENTO */}
                     <main>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '1.5rem' }}>
-                            {/* Quick Stats Bento */}
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="bento-stats-span-4"
-                                style={{
-                                    gridColumn: 'span 4',
-                                    background: 'var(--primary)',
-                                    padding: '2rem',
-                                    borderRadius: '32px',
-                                    color: 'white',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    justifyContent: 'space-between',
-                                    height: '220px'
-                                }}
-                            >
-                                <ShoppingBag size={32} />
-                                <div>
-                                    <div style={{ fontSize: '3rem', fontWeight: 900 }}>{addresses.length}</div>
-                                    <div style={{ fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', opacity: 0.8 }}>Active Addresses</div>
-                                </div>
-                            </motion.div>
-
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.1 }}
-                                className="bento-stats-span-8"
-                                style={{
-                                    gridColumn: 'span 8',
-                                    background: 'var(--surface-2)',
-                                    border: '1px solid var(--border)',
-                                    padding: '2rem',
-                                    borderRadius: '32px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '2rem',
-                                    height: '220px'
-                                }}
-                            >
-                                <div style={{ textAlign: 'center' }}>
-                                    <Bell size={24} style={{ marginBottom: '0.5rem', opacity: 0.5 }} />
-                                    <div style={{ fontWeight: 800 }}>Account Health</div>
-                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Full access enabled</div>
-                                </div>
-                                <div style={{ width: '1px', height: '60px', background: 'var(--border)' }} />
-                                <div style={{ textAlign: 'center' }}>
-                                    <Settings size={24} style={{ marginBottom: '0.5rem', opacity: 0.5 }} />
-                                    <div style={{ fontWeight: 800 }}>Studio Tier</div>
-                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Premium Creative</div>
-                                </div>
-                            </motion.div>
 
                             {/* Main Form Panel */}
                             <motion.div
@@ -368,6 +335,161 @@ const UserProfile = () => {
                                                 </button>
                                             </div>
                                         </motion.form>
+                                    )}
+
+                                    {tab === 'orders' && (
+                                        <motion.div
+                                            key="orders"
+                                            initial={{ opacity: 0, x: 20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            exit={{ opacity: 0, x: -20 }}
+                                        >
+                                            {selectedOrder ? (
+                                                <>
+                                                    <button 
+                                                        onClick={() => setSelectedOrder(null)}
+                                                        style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, cursor: 'pointer', marginBottom: '1.5rem', fontSize: '0.9rem' }}
+                                                    >
+                                                        <ChevronLeft size={18} /> BACK TO ORDERS
+                                                    </button>
+                                                    
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2.5rem' }}>
+                                                        <div>
+                                                            <h2 style={{ fontSize: '2rem', fontWeight: 900, marginBottom: '0.5rem' }}>Order Details</h2>
+                                                            <div style={{ color: 'var(--text-secondary)', fontWeight: 600, fontSize: '0.9rem' }}>
+                                                                REF: #{selectedOrder._id?.slice(-8).toUpperCase()} · {new Date(selectedOrder.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                                            </div>
+                                                        </div>
+                                                        <span className={`badge ${statusClass(selectedOrder.status)}`} style={{ textTransform: 'capitalize', borderRadius: '12px', padding: '0.5rem 1.25rem' }}>{selectedOrder.status}</span>
+                                                    </div>
+
+                                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2.5rem' }}>
+                                                        {[
+                                                            { icon: <MapPin size={18} />, label: 'DESTINATION', content: `${selectedOrder.shippingAddress?.address}, ${selectedOrder.shippingAddress?.city}` },
+                                                            { icon: <Truck size={18} />, label: 'LOGISTICS', content: selectedOrder.deliveryMethod === 'post' ? 'Standard Post' : 'Direct Service' },
+                                                            { icon: <CreditCard size={18} />, label: 'FINANCE', content: `${selectedOrder.paymentMethod} (${selectedOrder.isPaid ? 'Cleared' : 'Pending'})` },
+                                                        ].map(({ icon, label, content }) => (
+                                                            <div key={label} style={{ background: 'var(--surface-2)', padding: '1.5rem', borderRadius: '24px', border: '1px solid var(--border)' }}>
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--primary)', fontWeight: 800, fontSize: '0.7rem', marginBottom: '0.75rem', textTransform: 'uppercase', opacity: 0.8 }}>{icon} {label}</div>
+                                                                <div style={{ fontSize: '0.85rem', color: 'var(--text-primary)', fontWeight: 700, lineHeight: 1.4 }}>{content}</div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+
+                                                    <div style={{ background: 'var(--surface-2)', borderRadius: '24px', border: '1px solid var(--border)', padding: '2rem', marginBottom: '1.5rem' }}>
+                                                        <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '1.5rem' }}>Creative Assets</h3>
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                                                            {selectedOrder.orderItems?.map((item: any, i: number) => (
+                                                                <div key={i} style={{ display: 'flex', gap: '1.25rem', paddingBottom: '1.5rem', borderBottom: i < selectedOrder.orderItems.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                                                                    <img src={item.image} alt="" style={{ width: '80px', height: '90px', objectFit: 'cover', borderRadius: '16px' }} />
+                                                                    <div style={{ flex: 1 }}>
+                                                                        <div style={{ fontWeight: 800, marginBottom: '0.35rem' }}>{item.title}</div>
+                                                                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Qty: {item.qty} {item.size && `· Size: ${item.size}`}</div>
+                                                                    </div>
+                                                                    <div style={{ fontWeight: 900, color: 'var(--primary)' }}>LKR {(item.price * item.qty).toFixed(0)}</div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: '2rem', gap: '2rem', paddingTop: '1.5rem', borderTop: '2px solid var(--border)' }}>
+                                                            <span style={{ fontWeight: 800, color: 'var(--text-secondary)', fontSize: '0.9rem' }}>TOTAL INVESTMENT</span>
+                                                            <span style={{ fontWeight: 900, fontSize: '1.5rem', color: 'var(--text-primary)' }}>LKR {selectedOrder.totalPrice}</span>
+                                                        </div>
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <h2 style={{ fontSize: '2rem', fontWeight: 900, marginBottom: '2.5rem' }}>Order Archive</h2>
+                                                    {loadingOrders ? (
+                                                        Array(3).fill(0).map((_, i) => <div key={i} className="card skeleton" style={{ height: '100px', marginBottom: '1rem', borderRadius: '24px' }} />)
+                                                    ) : orders.length === 0 ? (
+                                                        <div style={{ padding: '3rem', textAlign: 'center', background: 'var(--surface-2)', borderRadius: '32px', border: '1px solid var(--border)' }}>
+                                                            <ShoppingBag size={48} color="var(--border)" style={{ margin: '0 auto 1rem' }} />
+                                                            <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', fontWeight: 600 }}>Zero creative acquisitions detected.</p>
+                                                            <Link to="/shop" className="btn btn-primary rounded-pill px-4">Begin Journey</Link>
+                                                        </div>
+                                                    ) : (
+                                                        orders.map(order => (
+                                                            <div 
+                                                                key={order._id} 
+                                                                onClick={() => fetchOrderDetail(order._id)} 
+                                                                className="card" 
+                                                                style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', padding: '1.25rem', marginBottom: '1rem', cursor: 'pointer', background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: '24px', transition: 'all 0.3s' }}
+                                                            >
+                                                                <div style={{ display: 'flex', gap: '0.75rem', flexShrink: 0 }}>
+                                                                    {order.orderItems.slice(0, 3).map((item: any, i: number) => (
+                                                                        <img key={i} src={item.image} alt="" style={{ width: '60px', height: '65px', objectFit: 'cover', borderRadius: '12px' }} />
+                                                                    ))}
+                                                                </div>
+                                                                <div style={{ flex: 1 }}>
+                                                                    <div style={{ fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>
+                                                                        {order.orderItems.length === 1 ? order.orderItems[0].title : `${order.orderItems.length} Creative Assets`}
+                                                                    </div>
+                                                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>{new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                                                                </div>
+                                                                <div style={{ textAlign: 'right' }}>
+                                                                    <div style={{ fontWeight: 900, color: 'var(--text-primary)', marginBottom: '0.4rem' }}>LKR {order.totalPrice}</div>
+                                                                    <span className={`badge ${statusClass(order.status)}`} style={{ textTransform: 'capitalize', borderRadius: '10px', fontSize: '0.7rem' }}>{order.status}</span>
+                                                                </div>
+                                                                <ChevronRight size={18} color="var(--text-secondary)" />
+                                                            </div>
+                                                        ))
+                                                    )}
+                                                </>
+                                            )}
+                                        </motion.div>
+                                    )}
+
+                                    {tab === 'wishlist' && (
+                                        <motion.div
+                                            key="wishlist"
+                                            initial={{ opacity: 0, x: 20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            exit={{ opacity: 0, x: -20 }}
+                                        >
+                                            <h2 style={{ fontSize: '2rem', fontWeight: 900, marginBottom: '2.5rem' }}>Curated Selections</h2>
+                                            {loadingWishlist ? (
+                                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1.5rem' }}>
+                                                    {Array(4).fill(0).map((_, i) => <div key={i} className="card skeleton" style={{ height: '280px', borderRadius: '24px' }} />)}
+                                                </div>
+                                            ) : wishlist.length === 0 ? (
+                                                <div style={{ padding: '3rem', textAlign: 'center', background: 'var(--surface-2)', borderRadius: '32px', border: '1px solid var(--border)' }}>
+                                                    <Heart size={48} color="var(--border)" style={{ margin: '0 auto 1rem' }} />
+                                                    <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', fontWeight: 600 }}>Collection presently empty. Save what inspires you.</p>
+                                                    <Link to="/shop" className="btn btn-primary rounded-pill px-4">Browse Gallery</Link>
+                                                </div>
+                                            ) : (
+                                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1.5rem' }}>
+                                                    {wishlist.map(p => (
+                                                        <div key={p._id} className="card product-card" style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: '24px', overflow: 'hidden' }}>
+                                                            <div className="product-card-img" style={{ position: 'relative', paddingTop: '130%', overflow: 'hidden' }}>
+                                                                <Link to={`/product/${p._id}`}>
+                                                                    <img src={p.imageUrl} alt={p.title} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                                </Link>
+                                                                <button
+                                                                    className="wishlist-btn active"
+                                                                    onClick={() => toggleWishlist(p._id)}
+                                                                    style={{ position: 'absolute', top: '10px', right: '10px', background: 'var(--surface)', border: 'none', borderRadius: '12px', padding: '0.5rem', cursor: 'pointer', color: 'var(--primary)' }}
+                                                                >
+                                                                    <Heart size={16} fill="currentColor" />
+                                                                </button>
+                                                            </div>
+                                                            <div style={{ padding: '1.25rem' }}>
+                                                                <Link to={`/product/${p._id}`} style={{ textDecoration: 'none' }}>
+                                                                    <div style={{ fontWeight: 800, color: 'var(--text-primary)', fontSize: '0.9rem', marginBottom: '0.25rem' }} className="text-truncate">{p.title}</div>
+                                                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '1rem' }}>{p.anime}</div>
+                                                                </Link>
+                                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                                    <span style={{ fontWeight: 900, color: 'var(--primary)' }}>LKR {p.price}</span>
+                                                                    <button onClick={() => addItem(p)} className="btn btn-primary btn-sm rounded-pill" style={{ padding: '0.4rem 1rem' }}>
+                                                                        Add
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </motion.div>
                                     )}
                                 </AnimatePresence>
 
