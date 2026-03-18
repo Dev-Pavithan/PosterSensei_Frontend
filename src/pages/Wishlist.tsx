@@ -4,6 +4,7 @@ import { Heart, ShoppingCart } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
+import { triggerFlyAnimation } from '../utils/animations';
 
 const Wishlist = () => {
     const { user } = useAuth();
@@ -40,11 +41,11 @@ const Wishlist = () => {
                             <div className="product-card-body">
                                 <Link to={`/product/${p._id}`} style={{ textDecoration: 'none' }}>
                                     <div className="product-title" style={{ color: 'var(--text-primary)' }}>{p.title}</div>
-                                    <div className="product-anime">{p.anime}</div>
+                                    <div className="product-anime">{p.character}</div>
                                 </Link>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', paddingTop: '1rem' }}>
                                     <span className="product-price">LKR {p.price}</span>
-                                    <button onClick={() => addItem(p)} className="btn btn-primary btn-sm" style={{ padding: '0.4rem 0.8rem' }}>
+                                    <button onClick={(e) => { addItem(p); triggerFlyAnimation(e, 'cart'); }} className="btn btn-primary btn-sm" style={{ padding: '0.4rem 0.8rem' }}>
                                         <ShoppingCart size={14} /> Add
                                     </button>
                                 </div>

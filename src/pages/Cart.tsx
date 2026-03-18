@@ -67,7 +67,7 @@ const Cart = () => {
                                         <X size={20} />
                                     </button>
                                 </div>
-                                <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', fontWeight: 700, marginBottom: '1rem' }}>{item.anime} {item.size && `· Size: ${item.size}`}</div>
+                                <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', fontWeight: 700, marginBottom: '1rem' }}>{item.character} {item.size && `· Size: ${item.size}`}</div>
                                 
                                 <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
                                     <div className="qty-stepper" style={{ background: 'var(--surface)', border: '2px solid var(--border)', height: '44px' }}>

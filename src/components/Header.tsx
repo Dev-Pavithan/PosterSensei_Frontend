@@ -57,7 +57,7 @@ const Header = () => {
     }, []);
 
     useEffect(() => {
-        axios.get('/api/products/animes')
+        axios.get('/api/products/titles')
             .then(r => setCategories(['All', ...r.data]))
     }, []);
 
@@ -108,7 +108,7 @@ const Header = () => {
     };
 
     const handleCategoryClick = (cat: string) => {
-        navigate('/shop', { state: { anime: cat } });
+        navigate('/shop', { state: { title: cat } });
         setMobileMenuOpen(false);
     };
 
@@ -174,7 +174,7 @@ const Header = () => {
                     <div style={{ display: 'flex', background: 'var(--surface-2)', border: '2px solid var(--border)', borderRadius: 'var(--radius-full)', overflow: 'hidden' }}>
                         <input
                             type="text"
-                            placeholder="Find anime art..."
+                            placeholder="Search by Anime, Character, Title..."
                             value={searchQuery}
                             onChange={e => setSearchQuery(e.target.value)}
                             style={{ flex: 1, padding: '0.5rem 1rem', border: 'none', outline: 'none', fontSize: '0.85rem', background: 'transparent', color: 'var(--text-primary)' }}
@@ -196,6 +196,7 @@ const Header = () => {
                     {/* Consolidated User Menu */}
                     <div ref={userMenuRef} style={{ position: 'relative' }}>
                         <button
+                            id="header-user-menu-desktop"
                             onClick={() => setShowUserMenu(!showUserMenu)}
                             style={{ 
                                 display: 'flex', 
@@ -206,7 +207,7 @@ const Header = () => {
                                 border: '1px solid var(--border)',
                                 borderRadius: 'var(--radius-full)',
                                 cursor: 'pointer',
-                                transition: '0.2s'
+                                transition: 'all 0.2s cubic-bezier(0.25, 1.5, 0.5, 1)'
                             }}
                         >
                             {user?.profilePic ? (
@@ -318,7 +319,7 @@ const Header = () => {
                     <div style={{ display: 'flex', background: 'var(--surface-2)', border: '2px solid var(--border)', borderRadius: 'var(--radius-full)', overflow: 'hidden' }}>
                         <input
                             type="text"
-                            placeholder="Search Posters..."
+                            placeholder="Anime, Character, or Title..."
                             value={searchQuery}
                             onChange={e => setSearchQuery(e.target.value)}
                             style={{ flex: 1, padding: '0.6rem 1rem', border: 'none', outline: 'none', fontSize: '0.9rem', background: 'transparent', color: 'var(--text-primary)' }}
@@ -388,7 +389,7 @@ const Header = () => {
                                     </div>
 
                                     <div>
-                                        <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem' }}>Popular Anime</div>
+                                        <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem' }}>Featured Collections</div>
                                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                                             {categories.slice(1, 10).map(cat => (
                                                 <button 
@@ -467,8 +468,9 @@ const Header = () => {
 
     <div style={{ position: 'relative' }}>
         <button 
+            id="header-user-menu-mobile"
             onClick={() => setShowUserMenu(!showUserMenu)}
-            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', color: showUserMenu ? 'var(--primary)' : 'var(--text-secondary)' }}
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', color: showUserMenu ? 'var(--primary)' : 'var(--text-secondary)', transition: 'transform 0.15s cubic-bezier(0.25, 1.5, 0.5, 1)' }}
         >
             {user?.profilePic ? (
                 <img src={user.profilePic} alt="" style={{ width: 24, height: 24, borderRadius: '50%', objectFit: 'cover' }} />

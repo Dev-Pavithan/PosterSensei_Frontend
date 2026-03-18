@@ -117,7 +117,7 @@ ul { list-style: none; }
 .product-discount { font-size: 0.7rem; font-weight: 700; color: var(--success); background: var(--success); color: white; padding: 2px 8px; border-radius: 4px; }
 
 /* ── Image Watermark ── */
-.product-card-img::after, .watermark-overlay::after {
+/* .product-card-img::after, .watermark-overlay::after {
   content: 'PosterSensei\A Anime Posters';
   white-space: pre-wrap;
   text-align: center;
@@ -136,7 +136,7 @@ ul { list-style: none; }
   letter-spacing: 2px;
   line-height: 1.2;
   text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
-}
+} */
 
 /* ── Buttons ── */
 .btn {

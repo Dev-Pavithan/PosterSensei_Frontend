@@ -21,6 +21,8 @@ import AdminProducts from './pages/AdminProducts';
 import AdminOrders from './pages/AdminOrders';
 import AdminUsers from './pages/AdminUsers';
 import AdminContact from './pages/AdminContact';
+import AdminReviews from './pages/AdminReviews';
+import AdminDelivery from './pages/AdminDelivery';
 import './index.css';
 import axios from 'axios';
 
@@ -36,7 +38,7 @@ import AdminLayout from './components/AdminLayout';
 const AppContent = () => {
   const location = useLocation();
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
-  
+
   return (
     <>
       {!isAuthPage && <Header />}
@@ -70,22 +72,24 @@ const App = () => {
         <AuthProvider>
           <WishlistProvider>
             <CartProvider>
-            <Routes>
-              {/* Admin Routes with distinct layout */}
-              <Route path="/admin" element={<AdminLayout />}>
-                <Route index element={<AdminDashboard />} />
-                <Route path="products" element={<AdminProducts />} />
-                <Route path="orders" element={<AdminOrders />} />
-                <Route path="users" element={<AdminUsers />} />
-                <Route path="contact" element={<AdminContact />} />
-              </Route>
+              <Routes>
+                {/* Admin Routes with distinct layout */}
+                <Route path="/admin" element={<AdminLayout />}>
+                  <Route index element={<AdminDashboard />} />
+                  <Route path="products" element={<AdminProducts />} />
+                  <Route path="orders" element={<AdminOrders />} />
+                  <Route path="users" element={<AdminUsers />} />
+                  <Route path="contact" element={<AdminContact />} />
+                  <Route path="reviews" element={<AdminReviews />} />
+                  <Route path="delivery" element={<AdminDelivery />} />
+                </Route>
 
-              {/* Customer Routes */}
-              <Route path="/*" element={<AppContent />} />
-            </Routes>
-          </CartProvider>
-        </WishlistProvider>
-      </AuthProvider>
+                {/* Customer Routes */}
+                <Route path="/*" element={<AppContent />} />
+              </Routes>
+            </CartProvider>
+          </WishlistProvider>
+        </AuthProvider>
       </Router>
     </ThemeProvider>
   );

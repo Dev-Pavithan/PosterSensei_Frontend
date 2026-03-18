@@ -5,6 +5,7 @@ import axios from 'axios';
 import { useCart } from '../contexts/CartContext';
 
 import { useWishlist } from '../contexts/WishlistContext';
+import { triggerFlyAnimation } from '../utils/animations';
 
 const SORTS = [
     { label: 'Most Popular', value: 'topRated' },
@@ -22,6 +23,7 @@ const ProductCard = ({ product }: { product: any }) => {
         e.preventDefault();
         addItem(product);
         setAdded(true);
+        triggerFlyAnimation(e, 'cart');
         setTimeout(() => setAdded(false), 1500);
     };
 
@@ -36,7 +38,13 @@ const ProductCard = ({ product }: { product: any }) => {
                 )}
                 <button 
                     className={`wishlist-btn ${isFav ? 'active' : ''}`} 
-                    onClick={(e) => { e.preventDefault(); toggleWishlist(product._id); }} 
+                    onClick={(e) => { 
+                        e.preventDefault(); 
+                        toggleWishlist(product._id); 
+                        if (!isFav) {
+                            triggerFlyAnimation(e, 'wishlist');
+                        }
+                    }} 
                     style={{ zIndex: 10 }}>
                     <Heart size={18} fill={isFav ? 'var(--primary)' : 'none'} color={isFav ? 'var(--primary)' : 'currentColor'} />
                 </button>
@@ -47,7 +55,7 @@ const ProductCard = ({ product }: { product: any }) => {
                 </div>
             </div>
             <div className="product-card-body">
-                <div className="product-anime">{product.anime}</div>
+                <div className="product-anime">{product.character}</div>
                 <div className="product-title">{product.title}</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.2rem' }}>
                     <Star size={14} fill="var(--accent)" color="var(--accent)" />
@@ -56,7 +64,6 @@ const ProductCard = ({ product }: { product: any }) => {
                 </div>
                 <div className="product-price-row">
                     <span className="product-price">LKR {product.price}</span>
-                    {product.originalPrice > 0 && <span className="product-original-price">LKR {product.originalPrice}</span>}
                 </div>
             </div>
             <style dangerouslySetInnerHTML={{ __html: `.product-card:hover .product-card-overlay { opacity: 1 !important; transform: translateY(-5px); }` }} />
@@ -71,33 +78,33 @@ const Shop = () => {
     const [products, setProducts] = useState<any[]>([]);
     const [categories, setCategories] = useState<string[]>(['All']);
     const [loading, setLoading] = useState(true);
-    const [activeAnime, setActiveAnime] = useState(searchParams.get('anime') || 'All');
+    const [activeTitle, setActiveTitle] = useState(searchParams.get('title') || 'All');
     const [sort, setSort] = useState('newest');
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [showFilters, setShowFilters] = useState(false);
 
     useEffect(() => {
-        axios.get('/api/products/animes')
+        axios.get('/api/products/titles')
             .then(r => setCategories(['All', ...r.data]))
     }, []);
 
     useEffect(() => {
         setLoading(true);
-        const params: any = { page, sort, pageSize: 12 };
+        const params: any = { page, sort, pageSize: 20 };
         
         // Handle internal state navigation (clean URL filtering)
-        if (location.state?.anime) {
-            const stateAnime = location.state.anime;
-            setActiveAnime(stateAnime);
+        const stateTitle = location.state?.title;
+        if (stateTitle) {
+            setActiveTitle(stateTitle);
             setPage(1);
             // Clear location state to prevent re-applying on refresh and keep URL clean
             navigate(location.pathname, { replace: true, state: {} });
             return; // Effect will re-run due to activeAnime change
         }
 
-        if (activeAnime !== 'All') params.anime = activeAnime;
-        if (searchParams.get('anime')) setActiveAnime(searchParams.get('anime')!);
+        if (activeTitle !== 'All') params.title = activeTitle;
+        if (searchParams.get('title')) setActiveTitle(searchParams.get('title')!);
 
         axios.get('/api/products', { params }).then(r => {
             setProducts(r.data.products || []);
@@ -106,9 +113,9 @@ const Shop = () => {
             setProducts([]);
             setTotalPages(1);
         }).finally(() => setLoading(false));
-    }, [activeAnime, sort, page, searchParams, location.state, navigate, location.pathname]);
+    }, [activeTitle, sort, page, searchParams, location.state, navigate, location.pathname]);
 
-    const handleAnime = (cat: string) => { setActiveAnime(cat); setPage(1); };
+    const handleTitle = (cat: string) => { setActiveTitle(cat); setPage(1); };
 
     return (
         <div className="container" style={{ paddingBlock: '2rem' }}>
@@ -124,7 +131,7 @@ const Shop = () => {
                 </button>
                 <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', flex: 1, minWidth: '300px' }}>
                     {categories.map(cat => (
-                        <button key={cat} className={`chip ${activeAnime === cat ? 'active' : ''}`} onClick={() => handleAnime(cat)}>{cat}</button>
+                        <button key={cat} className={`chip ${activeTitle === cat ? 'active' : ''}`} onClick={() => handleTitle(cat)}>{cat}</button>
                     ))}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -150,11 +157,11 @@ const Shop = () => {
                                 </div>
                             </div>
                             <hr className="divider" style={{ marginBlock: '1.5rem', opacity: 0.1 }} />
-                            <div style={{ fontWeight: 800, marginBottom: '1.25rem', fontSize: '1rem', color: 'var(--text-primary)' }}>Anime</div>
+                            <div style={{ fontWeight: 800, marginBottom: '1.25rem', fontSize: '1rem', color: 'var(--text-primary)' }}>Character</div>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                                 {categories.slice(1).map(cat => (
                                     <label key={cat} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-                                        <input type="checkbox" checked={activeAnime === cat} onChange={() => handleAnime(activeAnime === cat ? 'All' : cat)}
+                                        <input type="checkbox" checked={activeTitle === cat} onChange={() => handleTitle(activeTitle === cat ? 'All' : cat)}
                                             style={{ width: '18px', height: '18px', borderRadius: '4px', accentColor: 'var(--primary)' }} />
                                         {cat}
                                     </label>
@@ -185,7 +192,7 @@ const Shop = () => {
                             <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔍</div>
                             <h3 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)' }}>No products found</h3>
                             <p style={{ color: 'var(--text-muted)', marginTop: '0.5rem' }}>Try adjusting your filters or search query.</p>
-                            <button onClick={() => { setActiveAnime('All'); setSearchParams({}); }} className="btn btn-outline" style={{ marginTop: '1.5rem' }}>Clear All Filters</button>
+                            <button onClick={() => { setActiveTitle('All'); setSearchParams({}); }} className="btn btn-outline" style={{ marginTop: '1.5rem' }}>Clear All Filters</button>
                         </div>
                     ) : (
                         <>

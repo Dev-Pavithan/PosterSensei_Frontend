@@ -64,7 +64,7 @@ const Search = () => {
                                 )}
                             </div>
                             <div className="product-card-body">
-                                <div className="product-anime">{p.anime}</div>
+                                <div className="product-anime">{p.character}</div>
                                 <div className="product-title">{p.title}</div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.2rem' }}>
                                     <Star size={14} fill="var(--accent)" color="var(--accent)" />

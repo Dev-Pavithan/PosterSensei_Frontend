@@ -54,7 +54,7 @@ const ProductCard = ({ product, style }: { product: any, style?: React.CSSProper
                 </div>
             </div>
             <div className="product-card-body" style={{ padding: '1.5rem' }}>
-                <div className="product-anime" style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 800, color: 'var(--primary)', marginBottom: '0.25rem' }}>{product.anime}</div>
+                <div className="product-anime" style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 800, color: 'var(--primary)', marginBottom: '0.25rem' }}>{product.character}</div>
                 <div className="product-title" style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.75rem' }}>{product.title}</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
                     <div style={{ color: '#EAB308', display: 'flex' }}>
@@ -65,7 +65,6 @@ const ProductCard = ({ product, style }: { product: any, style?: React.CSSProper
                 </div>
                 <div className="product-price-row" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                     <span className="product-price" style={{ fontSize: '1.1rem', fontWeight: 900 }}>LKR {product.price}</span>
-                    {product.originalPrice > 0 && <span className="product-original-price" style={{ textDecoration: 'line-through', opacity: 0.5, fontSize: '0.85rem' }}>LKR {product.originalPrice}</span>}
                 </div>
             </div>
         </Link>
@@ -93,12 +92,12 @@ const Home = () => {
     useEffect(() => {
         axios.get('/api/products?pageSize=8').then(r => setProducts(r.data.products || r.data)).catch(() => setProducts([]));
         
-        axios.get('/api/products/animes').then(async r => {
-            const animeNames = r.data;
-            const dynamicCats = await Promise.all(animeNames.slice(0, 6).map(async (name: string) => {
+        axios.get('/api/products/titles').then(async r => {
+            const titleNames = r.data;
+            const dynamicCats = await Promise.all(titleNames.slice(0, 6).map(async (name: string) => {
                 if (CAT_STYLES[name]) return { name, ...CAT_STYLES[name] };
                 try {
-                    const prodRes = await axios.get(`/api/products?anime=${encodeURIComponent(name)}&pageSize=1`);
+                    const prodRes = await axios.get(`/api/products?title=${encodeURIComponent(name)}&pageSize=1`);
                     const products = prodRes.data.products || prodRes.data;
                     const fallbackImg = products.length > 0 ? products[0].imageUrl : 'https://images.unsplash.com/photo-1618331835717-8016f122c19e?w=400&auto=format&fit=crop&q=80';
                     return { name, img: fallbackImg, color: 'var(--primary)' };
@@ -328,7 +327,7 @@ const Home = () => {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '5vw' }}>
                         <div>
                             <div style={{ fontSize: '0.8rem', fontWeight: 900, color: 'var(--primary)', letterSpacing: '0.4em', marginBottom: '1rem' }}>COLLECTIONS</div>
-                            <h2 style={{ fontSize: 'clamp(2.5rem, 6vw, 5rem)', fontWeight: 900, lineHeight: 0.9 }}>Shop by Anime</h2>
+                            <h2 style={{ fontSize: 'clamp(2.5rem, 6vw, 5rem)', fontWeight: 900, lineHeight: 0.9 }}>Shop by Collection</h2>
                         </div>
                         <Link to="/shop" className="btn" style={{ 
                             borderRadius: '100px', 
@@ -377,7 +376,7 @@ const Home = () => {
                                         border: '1px solid var(--border)'
                                     }}
                                 >
-                                    <Link to={`/shop?anime=${encodeURIComponent(cat.name)}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block', height: '100%' }}>
+                                    <Link to={`/shop?title=${encodeURIComponent(cat.name)}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block', height: '100%' }}>
                                         <img src={cat.img} alt={cat.name} style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)' }} />
                                         <div/>
                                         <div style={{ position: 'absolute', bottom: '2.5rem', left: '2.5rem', right: '2.5rem' }}>

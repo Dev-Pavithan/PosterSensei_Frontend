@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 export interface CartItem {
     _id: string;
     title: string;
-    anime: string;
+    character: string;
     price: number;
     imageUrl: string;
     qty: number;
@@ -51,7 +51,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             return [...prev, {
                 _id: product._id,
                 title: product.title,
-                anime: product.anime,
+                character: product.character,
                 price: product.price,
                 imageUrl: product.imageUrl,
                 stock: product.stock,

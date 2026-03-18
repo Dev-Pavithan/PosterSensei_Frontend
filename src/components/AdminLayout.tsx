@@ -3,7 +3,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { 
     LayoutDashboard, Package, ShoppingCart, LogOut, ArrowLeft, 
     Maximize, Minimize, Moon, Sun, ChevronLeft, ChevronRight, 
-    Users2, Menu, X, Mail, Bell
+    Users2, Menu, X, Mail, Bell, Star, Truck
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
@@ -195,6 +195,8 @@ const AdminLayout = () => {
         { path: '/admin', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
         { path: '/admin/products', icon: <Package size={20} />, label: 'Products' },
         { path: '/admin/orders', icon: <ShoppingCart size={20} />, label: 'Orders' },
+        { path: '/admin/delivery', icon: <Truck size={20} />, label: 'Delivery Methods' },
+        { path: '/admin/reviews', icon: <Star size={20} />, label: 'Reviews' },
         { path: '/admin/users', icon: <Users2 size={20} />, label: 'Users' },
         { path: '/admin/contact', icon: <Mail size={20} />, label: 'Messages' },
     ];

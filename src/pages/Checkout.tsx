@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { MapPin, Truck, Home, CheckCircle2, ChevronRight } from 'lucide-react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { MapPin, Truck, Home, CheckCircle2, ChevronRight, Package, Zap } from 'lucide-react';
 import axios from 'axios';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -9,16 +9,36 @@ import { showSuccess, showError } from '../utils/alerts';
 const STEPS = ['Address', 'Delivery', 'Review & Pay'];
 
 const Checkout = () => {
-    const { items, subtotal, clearCart, discount, coupon } = useCart();
+    const { items: cartItems, subtotal: cartSubtotal, clearCart, discount: cartDiscount, coupon: cartCoupon } = useCart();
     const { user } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+    
+    const buyNowItem = location.state?.buyNowItem;
+    const items = buyNowItem ? [buyNowItem] : cartItems;
+    const subtotal = buyNowItem ? (buyNowItem.price * buyNowItem.qty) : cartSubtotal;
+    const discount = buyNowItem ? 0 : cartDiscount;
+    const coupon = buyNowItem ? null : cartCoupon;
     const [step, setStep] = useState(0);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const [deliveryMethod, setDeliveryMethod] = useState<'post' | 'local_setup'>('post');
+    const [deliveryMethods, setDeliveryMethods] = useState<any[]>([]);
+    const [selectedDelivery, setSelectedDelivery] = useState<any>(null);
+
+    React.useEffect(() => {
+        const fetchDeliveryOptions = async () => {
+            try {
+                const { data } = await axios.get('/api/delivery');
+                setDeliveryMethods(data);
+                if (data.length > 0) setSelectedDelivery(data[0]);
+            } catch (err) { }
+        };
+        fetchDeliveryOptions();
+    }, []);
+
     const [address, setAddress] = useState({ address: '', city: '', postalCode: '', country: 'Srilanka' });
     const [paymentMethod] = useState('Cash on Delivery');
-    const shipping = (subtotal - discount) >= 999 ? 0 : 79;
+    const shipping = selectedDelivery?.price || 0;
     const total = subtotal - discount + shipping;
 
     if (!user) return (
@@ -40,11 +60,13 @@ const Checkout = () => {
         try {
             const orderItems = items.map(i => ({ title: i.title, qty: i.qty, image: i.imageUrl, price: i.price, size: i.size, product: i._id }));
             const { data } = await axios.post('/api/orders', {
-                orderItems, shippingAddress: address, deliveryMethod, paymentMethod, totalPrice: total,
+                orderItems, shippingAddress: address, deliveryMethod: selectedDelivery?.title || 'Standard Post', paymentMethod, totalPrice: total,
                 discount, couponCode: coupon?.code || '',
             }, { withCredentials: true });
             showSuccess('Order Transmitted', 'Your creative acquisition has been registered. Redirecting to status...');
-            clearCart();
+            if (!buyNowItem) {
+                clearCart();
+            }
             navigate(`/orders/${data._id}`);
         } catch (err: any) {
             showError('Transmission Failed', err.response?.data?.message || 'Failed to place order. Please verify your connection.');
@@ -109,21 +131,24 @@ const Checkout = () => {
                                 <Truck size={18} color="var(--primary)" /> Choose Delivery Method
                             </h3>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                {[
-                                    { val: 'post', icon: <Truck size={28} />, title: 'Standard Post', desc: 'We print and ship it to your address. Arrives in 5-7 business days.', price: shipping === 0 ? 'FREE' : `LKR ${shipping}` },
-                                    { val: 'local_setup', icon: <Home size={28} />, title: 'Room Makeover Service', desc: 'Our team visits your home, brings the posters, and installs everything professionally on your wall.', price: 'From LKR 299', badge: '✨ Premium' },
-                                ].map(({ val, icon, title, desc, price, badge }) => (
-                                    <div key={val} onClick={() => setDeliveryMethod(val as any)} style={{ padding: '1.25rem', borderRadius: 'var(--radius-md)', border: `2px solid ${deliveryMethod === val ? 'var(--primary)' : 'var(--border)'}`, background: deliveryMethod === val ? 'var(--primary-light)' : 'white', cursor: 'pointer', transition: 'all 0.2s' }}>
+                                {deliveryMethods.length === 0 ? (
+                                    <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>Loading delivery options...</div>
+                                ) : deliveryMethods.map((m) => (
+                                    <div key={m._id} onClick={() => setSelectedDelivery(m)} style={{ padding: '1.25rem', borderRadius: 'var(--radius-md)', border: `2px solid ${selectedDelivery?._id === m._id ? 'var(--primary)' : 'var(--border)'}`, background: selectedDelivery?._id === m._id ? 'var(--primary-light)' : 'white', cursor: 'pointer', transition: 'all 0.2s' }}>
                                         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
-                                            <div style={{ color: deliveryMethod === val ? 'var(--primary)' : 'var(--text-muted)' }}>{icon}</div>
+                                            <div style={{ color: selectedDelivery?._id === m._id ? 'var(--primary)' : 'var(--text-muted)' }}>
+                                                {m.iconType === 'Home' ? <Home size={28} /> : m.iconType === 'Package' ? <Package size={28} /> : m.iconType === 'Zap' ? <Zap size={28} /> : <Truck size={28} />}
+                                            </div>
                                             <div style={{ flex: 1 }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.3rem' }}>
-                                                    <div style={{ fontWeight: 700 }}>{title}</div>
-                                                    {badge && <span className="badge badge-secondary" style={{ fontSize: '0.68rem' }}>{badge}</span>}
+                                                    <div style={{ fontWeight: 700 }}>{m.title}</div>
+                                                    {m.badge && <span className="badge badge-secondary" style={{ fontSize: '0.68rem' }}>{m.badge}</span>}
                                                 </div>
-                                                <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{desc}</div>
+                                                <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{m.description}</div>
                                             </div>
-                                            <div style={{ fontWeight: 700, color: 'var(--primary)', flexShrink: 0 }}>{price}</div>
+                                            <div style={{ fontWeight: 700, color: 'var(--primary)', flexShrink: 0 }}>
+                                                {m.price === 0 ? 'FREE' : `${m.priceType === 'from' ? 'From ' : ''}LKR ${m.price}`}
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
@@ -151,7 +176,7 @@ const Checkout = () => {
                             ))}
                             <div style={{ background: 'var(--surface-2)', padding: '1rem', borderRadius: 'var(--radius-sm)', marginTop: '0.75rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
                                 <div>📍 {address.address}, {address.city} - {address.postalCode}</div>
-                                <div style={{ marginTop: '0.3rem' }}>🚚 {deliveryMethod === 'post' ? 'Standard Post' : 'Room Makeover Service'} · 💳 {paymentMethod}</div>
+                                <div style={{ marginTop: '0.3rem' }}>🚚 {selectedDelivery?.title || 'Delivery Method'} · 💳 {paymentMethod}</div>
                             </div>
                             <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
                                 <button onClick={() => setStep(1)} className="btn btn-ghost" style={{ border: '1px solid var(--border)', flex: 1 }}>Back</button>

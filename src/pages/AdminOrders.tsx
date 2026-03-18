@@ -377,8 +377,8 @@ const AdminOrders = () => {
 
             {/* View Details Modal */}
             {selectedOrder && (
-                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(5px)', zIndex: 4000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: window.innerWidth < 640 ? '0.5rem' : '1.5rem' }}>
-                    <div style={{ background: 'var(--surface)', borderRadius: window.innerWidth < 640 ? '16px' : '28px', width: '100%', maxWidth: '800px', maxHeight: '95vh', overflowY: 'auto', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)', border: '1px solid var(--border)' }}>
+                <div onClick={() => { setSelectedOrder(null); navigate(location.pathname, { replace: true }); }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(5px)', zIndex: 4000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: window.innerWidth < 640 ? '0.5rem' : '1.5rem' }}>
+                    <div onClick={e => e.stopPropagation()} style={{ background: 'var(--surface)', borderRadius: window.innerWidth < 640 ? '16px' : '28px', width: '100%', maxWidth: '800px', maxHeight: '95vh', overflowY: 'auto', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)', border: '1px solid var(--border)' }}>
                         <div style={{ padding: window.innerWidth < 640 ? '1.25rem' : '1.5rem 2rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--surface-2)', position: 'sticky', top: 0, zIndex: 10 }}>
                             <div>
                                 <h3 style={{ fontWeight: 900, fontSize: window.innerWidth < 640 ? '1.25rem' : '1.5rem', letterSpacing: '-0.5px' }}>Order Details</h3>
@@ -423,6 +423,12 @@ const AdminOrders = () => {
                                         <div>
                                             <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>Payment Method</div>
                                             <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{selectedOrder.paymentMethod} ({selectedOrder.isPaid ? 'PAID' : 'PENDING'})</div>
+                                        </div>
+                                        <div>
+                                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>Delivery Method</div>
+                                            <div style={{ fontWeight: 700, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                <Truck size={14} className="text-primary" /> {selectedOrder.deliveryMethod || 'Standard Post'}
+                                            </div>
                                         </div>
                                         <div>
                                             <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>Tracking ID</div>
@@ -475,7 +481,7 @@ const AdminOrders = () => {
             
             {/* Tracking ID Modal */}
             {trackingModal && (
-                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 5000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
                     <div style={{ background: 'var(--surface)', borderRadius: 'var(--radius-xl)', width: '100%', maxWidth: '460px', boxShadow: 'var(--shadow-lg)', overflow: 'hidden' }}>
                         {/* Modal header */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border)', background: 'linear-gradient(135deg, var(--primary), var(--secondary))', color: 'white' }}>

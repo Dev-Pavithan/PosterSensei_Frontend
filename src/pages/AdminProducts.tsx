@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import { showAlert, showConfirm, showError, showSuccess, showToast } from '../utils/alerts';
 
-const emptyForm = { title: '', anime: '', category: 'Posters', price: '', originalPrice: '', discount: '', imageUrl: '', stock: '', description: '', sizes: 'A4,A3,A2', featured: false };
+const emptyForm = { title: '', character: '', category: 'Posters', price: '', discount: '', imageUrl: '', description: '', sizes: 'A4,A3,A2', featured: false, orientation: 'Portrait' };
 
 const AdminProducts = () => {
     const [products, setProducts] = useState<any[]>([]);
@@ -48,7 +48,7 @@ const AdminProducts = () => {
 
     const openAdd = () => { setForm(emptyForm); setEditId(null); setShowModal(true); };
     const openEdit = (p: any) => {
-        setForm({ title: p.title, anime: p.anime, category: p.category, price: p.price, originalPrice: p.originalPrice || '', discount: p.discount || '', imageUrl: p.imageUrl, stock: p.stock, description: p.description, sizes: (p.sizes || []).join(','), featured: p.featured });
+        setForm({ title: p.title, character: p.character, category: p.category, price: p.price, discount: p.discount || '', imageUrl: p.imageUrl, description: p.description, sizes: (p.sizes || []).join(','), featured: p.featured, orientation: p.orientation || 'Portrait' });
         setEditId(p._id); setShowModal(true); setOpenMenuId(null);
     };
 
@@ -58,7 +58,7 @@ const AdminProducts = () => {
             return;
         }
         setSaving(true);
-        const payload = { ...form, price: Number(form.price), originalPrice: Number(form.originalPrice), discount: Number(form.discount), stock: Number(form.stock), sizes: form.sizes.split(',').map(s => s.trim()).filter(Boolean) };
+        const payload = { ...form, price: Number(form.price), discount: Number(form.discount), sizes: form.sizes.split(',').map(s => s.trim()).filter(Boolean) };
         try {
             if (editId) {
                 await axios.put(`/api/products/${editId}`, payload);
@@ -201,10 +201,10 @@ const AdminProducts = () => {
                         </div>
                     </div>
                     <div style={{ background: 'var(--surface)', padding: '1.5rem', borderRadius: '24px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-                        <div style={{ width: 56, height: 56, borderRadius: '16px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Box size={28} /></div>
+                        <div style={{ width: 56, height: 56, borderRadius: '16px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Layout size={28} /></div>
                         <div>
-                            <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Depleted Stock</div>
-                            <div style={{ fontSize: '1.5rem', fontWeight: 900 }}>{products.filter(p => p.stock === 0).length} Sold Out</div>
+                            <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Orientation</div>
+                            <div style={{ fontSize: '1.5rem', fontWeight: 900 }}>Portrait Art</div>
                         </div>
                     </div>
                 </div>
@@ -231,7 +231,7 @@ const AdminProducts = () => {
                     }}>
                         <thead>
                             <tr style={{ background: 'var(--surface-2)', borderBottom: '1px solid var(--border)' }}>
-                                {['Product', 'Anime & Category', 'Price', 'Stock Status', 'Featured', 'Actions'].map((h, i) => (
+                                {['Product', 'Character & Category', 'Price', 'Orientation', 'Featured', 'Actions'].map((h, i) => (
                                     <th key={h} style={{
                                         padding: '1rem 1.5rem',
                                         textAlign: 'left',
@@ -270,20 +270,13 @@ const AdminProducts = () => {
                                     </td>
                                     <td style={{ padding: '1rem 1.5rem' }}>
                                         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                                            <span style={{ fontSize: '0.75rem', color: 'var(--primary)', background: 'var(--primary-light)', padding: '2px 8px', borderRadius: '4px', fontWeight: 700 }}>{p.anime}</span>
+                                            <span style={{ fontSize: '0.75rem', color: 'var(--primary)', background: 'var(--primary-light)', padding: '2px 8px', borderRadius: '4px', fontWeight: 700 }}>{p.character}</span>
                                             <span className="badge badge-muted" style={{ fontSize: '0.7rem' }}>{p.category}</span>
                                         </div>
                                     </td>
                                     <td style={{ padding: '1rem 1.5rem', fontWeight: 800, color: 'var(--text-primary)', fontSize: '1rem' }}>LKR {p.price.toLocaleString()}</td>
                                     <td style={{ padding: '1rem 1.5rem' }}>
-                                        {p.stock > 0 ? (
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--success)' }} />
-                                                <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>{p.stock} in stock</span>
-                                            </div>
-                                        ) : (
-                                            <span className="badge badge-error">Sold Out</span>
-                                        )}
+                                        <span className="badge badge-outline" style={{ fontSize: '0.8rem', fontWeight: 600 }}>{p.orientation}</span>
                                     </td>
                                     <td style={{ padding: '1rem 1.5rem' }}>
                                         <div onClick={() => toggleFeatured(p)} style={{ cursor: 'pointer' }}>
@@ -530,13 +523,19 @@ const AdminProducts = () => {
                                                     <input className="input" placeholder="e.g. Solo Leveling - Sung Jinwoo" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} />
                                                 </div>
                                                 <div className="input-group">
-                                                    <label className="input-label"><CloudLightning size={12} style={{ marginRight: '4px' }} /> Anime/Series</label>
-                                                    <input className="input" placeholder="e.g. Solo Leveling" value={form.anime} onChange={e => setForm(f => ({ ...f, anime: e.target.value }))} />
+                                                    <label className="input-label"><CloudLightning size={12} style={{ marginRight: '4px' }} /> Character</label>
+                                                    <input className="input" placeholder="e.g. Sung Jinwoo" value={form.character} onChange={e => setForm(f => ({ ...f, character: e.target.value }))} />
                                                 </div>
                                                 <div className="input-group">
                                                     <label className="input-label">Classification</label>
                                                     <select className="input" value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}>
                                                         {['Posters', 'Stickers', 'Wallpapers', 'Custom Art'].map(c => <option key={c} value={c}>{c}</option>)}
+                                                    </select>
+                                                </div>
+                                                <div className="input-group" style={{ gridColumn: '1/-1' }}>
+                                                    <label className="input-label">Orientation</label>
+                                                    <select className="input" value={form.orientation} onChange={e => setForm(f => ({ ...f, orientation: e.target.value }))}>
+                                                        {['Portrait', 'Landscape', 'Square'].map(o => <option key={o} value={o}>{o}</option>)}
                                                     </select>
                                                 </div>
                                             </div>
@@ -554,18 +553,10 @@ const AdminProducts = () => {
                                                     <input type="number" className="input" value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))} />
                                                 </div>
                                                 <div className="input-group">
-                                                    <label className="input-label">MSRP (Strike)</label>
-                                                    <input type="number" className="input" value={form.originalPrice} onChange={e => setForm(f => ({ ...f, originalPrice: e.target.value }))} />
-                                                </div>
-                                                <div className="input-group">
                                                     <label className="input-label">Off %</label>
                                                     <input type="number" className="input" value={form.discount} onChange={e => setForm(f => ({ ...f, discount: e.target.value }))} />
                                                 </div>
-                                                <div className="input-group">
-                                                    <label className="input-label"><Box size={12} style={{ marginRight: '4px' }} /> Stock Units</label>
-                                                    <input type="number" className="input" value={form.stock} onChange={e => setForm(f => ({ ...f, stock: e.target.value }))} />
-                                                </div>
-                                                <div className="input-group" style={{ gridColumn: window.innerWidth < 640 ? 'span 2' : 'span 2' }}>
+                                                <div className="input-group" style={{ gridColumn: 'span 2' }}>
                                                     <label className="input-label">Dimensions</label>
                                                     <input className="input" placeholder="A4, A3, A2..." value={form.sizes} onChange={e => setForm(f => ({ ...f, sizes: e.target.value }))} />
                                                 </div>
@@ -631,15 +622,12 @@ const AdminProducts = () => {
                                     <div>
                                         <div style={{ marginBottom: '2rem' }}>
                                             <div style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--primary)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                {viewProduct.anime} <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: 'var(--border)' }} /> {viewProduct.category}
+                                                {viewProduct.character} <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: 'var(--border)' }} /> {viewProduct.category}
                                             </div>
                                             <h3 style={{ fontSize: window.innerWidth < 640 ? '1.5rem' : '2.25rem', fontWeight: 900, lineHeight: 1.1, marginBottom: '1rem' }}>{viewProduct.title}</h3>
                                             <div style={{ display: 'flex', alignItems: window.innerWidth < 640 ? 'flex-start' : 'center', gap: '1.5rem', flexDirection: window.innerWidth < 640 ? 'column' : 'row' }}>
                                                 <div style={{ fontSize: window.innerWidth < 640 ? '1.5rem' : '2rem', fontWeight: 900, color: 'var(--text-primary)' }}>LKR {viewProduct.price.toLocaleString()}</div>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                                    {viewProduct.originalPrice > viewProduct.price && (
-                                                        <div style={{ fontSize: '1rem', color: 'var(--text-muted)', textDecoration: 'line-through', fontWeight: 600 }}>LKR {viewProduct.originalPrice.toLocaleString()}</div>
-                                                    )}
                                                     {viewProduct.discount > 0 && <span className="badge badge-success" style={{ fontSize: '0.75rem', padding: '4px 10px' }}>{viewProduct.discount}% OFF</span>}
                                                 </div>
                                             </div>
@@ -647,10 +635,8 @@ const AdminProducts = () => {
 
                                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem' }}>
                                             <div style={{ background: 'var(--surface-2)', padding: '1rem', borderRadius: '20px', border: '1px solid var(--border)' }}>
-                                                <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.5rem' }}>Inventory</div>
-                                                <div style={{ fontWeight: 800, fontSize: '1rem', color: viewProduct.stock > 0 ? 'var(--success)' : 'var(--error)' }}>
-                                                    {viewProduct.stock > 0 ? `${viewProduct.stock} Units` : 'Sold Out'}
-                                                </div>
+                                                <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.5rem' }}>Orientation</div>
+                                                <div style={{ fontWeight: 800, fontSize: '1rem' }}>{viewProduct.orientation}</div>
                                             </div>
                                             <div style={{ background: 'var(--surface-2)', padding: '1rem', borderRadius: '20px', border: '1px solid var(--border)' }}>
                                                 <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.5rem' }}>Placement</div>
